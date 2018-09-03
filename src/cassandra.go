@@ -45,7 +45,7 @@ func main() {
 	defer jmx.Close()
 
 	if args.All() || args.Metrics {
-		rawMetrics, allColumnFamilies, err := getMetrics()
+		rawMetrics, allColumnFamilies, err := getMetrics(l)
 		fatalIfErr(l, err)
 
 		s := e.NewMetricSet("CassandraSample", metricSetAttributes...)
