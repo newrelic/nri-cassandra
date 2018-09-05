@@ -11,7 +11,7 @@ import (
 // getMetrics will gather all node and keyspace level metrics and return them as two maps
 // The main metrics map will contain all the keys got from JMX and the keyspace metrics map
 // Will contain maps for each <keyspace>.<columnFamily> found while inspecting JMX metrics.
-func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, error) {
+func getMetrics(l log.Logger) (map[string]interface{}, map[string]map[string]interface{}, error) {
 	internalKeyspaces := map[string]struct{}{
 		"OpsCenter":          {},
 		"system":             {},
@@ -32,7 +32,8 @@ func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, er
 	for _, query := range jmxPatterns {
 		results, err := jmx.Query(query, args.Timeout)
 		if err != nil {
-			return nil, nil, err
+			l.Debugf("Error querying %s: %v", query, err)
+			continue
 		}
 		for key, value := range results {
 			matches := re.FindStringSubmatch(key)
