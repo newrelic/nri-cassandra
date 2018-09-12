@@ -25,7 +25,7 @@ type argumentList struct {
 
 const (
 	integrationName    = "com.newrelic.cassandra"
-	integrationVersion = "2.0.0-beta"
+	integrationVersion = "2.0.2"
 )
 
 var (
