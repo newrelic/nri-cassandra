@@ -48,13 +48,13 @@ func main() {
 		rawMetrics, allColumnFamilies, err := getMetrics(l)
 		fatalIfErr(l, err)
 
-		s := e.NewMetricSet("CassandraSample", metricSetAttributes...)
+		s := e.NewMetricSet("CassandraSample")
 
 		populateMetrics(l, s, rawMetrics, metricsDefinition)
 		populateMetrics(l, s, rawMetrics, commonDefinition)
 
 		for _, columnFamilyMetrics := range allColumnFamilies {
-			s := e.NewMetricSet("CassandraColumnFamilySample", metricSetAttributes...)
+			s := e.NewMetricSet("CassandraColumnFamilySample")
 			populateMetrics(l, s, columnFamilyMetrics, columnFamilyDefinition)
 			populateMetrics(l, s, rawMetrics, commonDefinition)
 		}
