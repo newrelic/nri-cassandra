@@ -11,13 +11,6 @@ var commonDefinition = map[string][]interface{}{
 	"cluster.rack":       {"org.apache.cassandra.db:type=EndpointSnitchInfo,attr=Rack", metric.ATTRIBUTE},
 }
 
-// attributes that make a metric-set unique.
-var metricSetAttributes = metric.Attributes{
-	metric.Attr("db.keyspace", "keyspace"),
-	metric.Attr("db.columnFamily", "columnFamily"),
-	metric.Attr("db.keyspaceAndColumnFamily", "keyspaceAndColumnFamily"),
-}
-
 // All metrics we want to provide for the cassandra integration
 var metricsDefinition = map[string][]interface{}{
 	"query.viewWriteRequestsPerSecond":              {"org.apache.cassandra.metrics:type=ClientRequest,scope=ViewWrite,name=Latency,attr=OneMinuteRate", metric.GAUGE},
@@ -170,6 +163,11 @@ var metricsDefinition = map[string][]interface{}{
 	"db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks": {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
 	"db.threadpool.internalValidationExecutorCompletedTasks":              {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CompletedTasks,attr=Value", metric.GAUGE},
 	"db.threadpool.internalValidationExecutorCurrentlyBlockedTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
+
+	// attributes that make a metric-set unique.
+	"db.keyspace":                {"keyspace", metric.ATTRIBUTE},
+	"db.columnFamily":            {"columnFamily", metric.ATTRIBUTE},
+	"db.keyspaceAndColumnFamily": {"keyspaceAndColumnFamily", metric.ATTRIBUTE},
 }
 
 var columnFamilyDefinition = map[string][]interface{}{
@@ -213,6 +211,11 @@ var columnFamilyDefinition = map[string][]interface{}{
 	"db.meanRowSize":                              {"org.apache.cassandra.metrics:type=ColumnFamily,name=MeanRowSize,attr=Value", metric.GAUGE},
 	"db.maxRowSize":                               {"org.apache.cassandra.metrics:type=ColumnFamily,name=MaxRowSize,attr=Value", metric.GAUGE},
 	"db.minRowSize":                               {"org.apache.cassandra.metrics:type=ColumnFamily,name=MinRowSize,attr=Value", metric.GAUGE},
+
+	// attributes that make a metric-set unique.
+	"db.keyspace":                {"keyspace", metric.ATTRIBUTE},
+	"db.columnFamily":            {"columnFamily", metric.ATTRIBUTE},
+	"db.keyspaceAndColumnFamily": {"keyspaceAndColumnFamily", metric.ATTRIBUTE},
 }
 
 // The patterns used to get all the beans needed for the metrics defined above
