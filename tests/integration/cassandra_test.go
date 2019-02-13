@@ -72,7 +72,7 @@ func runIntegration(t *testing.T, envVars ...string) (string, string, error) {
 
 func TestMain(m *testing.M) {
 	fmt.Println("Wait for cassandra to initialize...")
-	time.Sleep(10 * time.Second)
+	time.Sleep(30 * time.Second)
 
 	flag.Parse()
 
