@@ -30,7 +30,7 @@ const (
 	integrationName    = "com.newrelic.cassandra"
 	integrationVersion = "2.1.0"
 
-	entityRemoteType = "cassandra"
+	entityRemoteType = "node"
 )
 
 var (
@@ -38,22 +38,7 @@ var (
 )
 
 func main() {
-	var i *integration.Integration
-	var err error
-	cachePath := os.Getenv("NRIA_CACHE_PATH")
-
-	if cachePath == "" {
-		i, err = integration.New(integrationName, integrationVersion, integration.Args(&args))
-	} else {
-		var storer persist.Storer
-
-		logger := log.NewStdErr(args.Verbose)
-		storer, err = persist.NewFileStore(cachePath, logger, persist.DefaultTTL)
-		fatalIfErr(err)
-
-		i, err = integration.New(integrationName, integrationVersion, integration.Args(&args),
-			integration.Storer(storer), integration.Logger(logger))
-	}
+	i, err := createIntegration()
 
 	fatalIfErr(err)
 	log.SetupLogging(args.Verbose)
@@ -90,9 +75,24 @@ func main() {
 	fatalIfErr(i.Publish())
 }
 
+func createIntegration() (*integration.Integration, error) {
+	cachePath := os.Getenv("NRIA_CACHE_PATH")
+	if cachePath == "" {
+		return integration.New(integrationName, integrationVersion, integration.Args(&args))
+	}
+
+	l := log.NewStdErr(args.Verbose)
+	s, err := persist.NewFileStore(cachePath, l, persist.DefaultTTL)
+	if err != nil {
+		return nil, err
+	}
+
+	return integration.New(integrationName, integrationVersion, integration.Args(&args), integration.Storer(s), integration.Logger(l))
+}
+
 func entity(i *integration.Integration) (*integration.Entity, error) {
 	if args.RemoteMonitoring {
-		n := fmt.Sprintf("%s:%d", args.Hostname, args.Port)
+		n := fmt.Sprintf("%s", args.Hostname)
 		return i.Entity(n, entityRemoteType)
 	}
 
