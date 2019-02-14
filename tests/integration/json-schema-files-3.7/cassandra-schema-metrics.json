@@ -1,0 +1,632 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "properties": {
+    "events": {
+      "items": {
+        "properties": {},
+        "required": []
+      },
+      "type": "array"
+    },
+    "integration_version": {
+      "minLength": 1,
+      "pattern": "^2.[0-9].[0-9]$",
+      "type": "string"
+    },
+    "inventory": {
+      "maxProperties": 0,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "metrics": {
+      "items": [
+        {
+          "properties": {
+            "client.connectedNativeClients": {
+              "type": "number"
+            },
+            "cluster.name": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "db.allMemtablesOffHeapSizeBytes": {
+              "type": "number"
+            },
+            "db.allMemtablesOnHeapSizeBytes": {
+              "type": "number"
+            },
+            "db.commitLogCompletedTasksPerSecond": {
+              "type": "number"
+            },
+            "db.commitLogPendindTasks": {
+              "type": "number"
+            },
+            "db.commitLogTotalSizeBytes": {
+              "type": "number"
+            },
+            "db.droppedBatchRemoveMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedBatchStoreMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedCounterMutationMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedHintMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedMutationMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedPagedRangeMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedRangeSliceMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedReadMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedReadRepairMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedRequestResponseMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.droppedTraceMessagesPerSecond": {
+              "type": "number"
+            },
+            "db.keyCacheCapacityBytes": {
+              "type": "number"
+            },
+            "db.keyCacheHitRate": {
+              "type": "number"
+            },
+            "db.keyCacheHitsPerSecond": {
+              "type": "number"
+            },
+            "db.keyCacheRequestsPerSecond": {
+              "type": "number"
+            },
+            "db.keyCacheSizeBytes": {
+              "type": "number"
+            },
+            "db.liveSSTableCount": {
+              "type": "number"
+            },
+            "db.loadBytes": {
+              "type": "number"
+            },
+            "db.rowCacheCapacityBytes": {
+              "type": "number"
+            },
+            "db.rowCacheHitRate": {
+              "type": "number"
+            },
+            "db.rowCacheHitsPerSecond": {
+              "type": "number"
+            },
+            "db.rowCacheRequestsPerSecond": {
+              "type": "number"
+            },
+            "db.rowCacheSizeBytes": {
+              "type": "number"
+            },
+            "db.threadpool.internalAntiEntropyStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalAntiEntropyStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalAntiEntropyStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalAntiEntropyStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCacheCleanupExecutorActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCacheCleanupExecutorCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCacheCleanupExecutorCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCacheCleanupExecutorPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCompactionExecutorActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCompactionExecutorCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCompactionExecutorCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalCompactionExecutorPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalGossipStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalGossipStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalGossipStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalGossipStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalHintsDispatcherActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalHintsDispatcherCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalHintsDispatcherCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalHintsDispatcherPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalInternalResponseStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalInternalResponseStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalInternalResponseStagePCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalInternalResponseStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableFlushWriterActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableFlushWriterCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableFlushWriterCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableFlushWriterPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtablePostFlushActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtablePostFlushCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtablePostFlushCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtablePostFlushPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableReclaimMemoryActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableReclaimMemoryCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableReclaimMemoryCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMemtableReclaimMemoryPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMigrationStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMigrationStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMigrationStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMigrationStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMiscStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMiscStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMiscStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalMiscStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalPendingRangeCalculatorActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalPendingRangeCalculatorCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalPendingRangeCalculatorCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalPendingRangeCalculatorPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSamplerActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSamplerCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSamplerCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSamplerPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSecondaryIndexManagementActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSecondaryIndexManagementCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalSecondaryIndexManagementPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalValidationExecutorActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalValidationExecutorCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalValidationExecutorCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.internalValidationExecutorPendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestCounterMutationStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestCounterMutationStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestCounterMutationStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestCounterMutationStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestMutationStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestMutationStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestMutationStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestMutationStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadRepairStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadRepairStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadRepairStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadRepairStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestReadStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestRequestResponseStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestRequestResponseStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestRequestResponseStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestRequestResponseStagePendingTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestViewMutationStageActiveTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestViewMutationStageCompletedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestViewMutationStageCurrentlyBlockedTasks": {
+              "type": "number"
+            },
+            "db.threadpool.requestViewMutationStagePendingTasks": {
+              "type": "number"
+            },
+            "db.totalHintsInProgress": {
+              "type": "number"
+            },
+            "db.totalHintsPerSecond": {
+              "type": "number"
+            },
+            "event_type": {
+              "minLength": 1,
+              "pattern": "^CassandraSample$",
+              "type": "string"
+            },
+            "query.CASReadRequestsPerSecond": {
+              "type": "number"
+            },
+            "query.CASWriteRequestsPerSecond": {
+              "type": "number"
+            },
+            "query.rangeSliceRequestsPerSecond": {
+              "type": "number"
+            },
+            "query.rangeSliceTimeoutsPerSecond": {
+              "type": "number"
+            },
+            "query.rangeSliceUnavailablesPerSecond": {
+              "type": "number"
+            },
+            "query.readLatency50thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.readLatency75thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.readLatency95thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.readLatency98thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.readLatency999thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.readLatency99thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.readRequestsPerSecond": {
+              "type": "number"
+            },
+            "query.readTimeoutsPerSecond": {
+              "type": "number"
+            },
+            "query.readUnavailablesPerSecond": {
+              "type": "number"
+            },
+            "query.viewWriteRequestsPerSecond": {
+              "type": "number"
+            },
+            "query.writeLatency50thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.writeLatency75thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.writeLatency95thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.writeLatency98thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.writeLatency999thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.writeLatency99thPercentileMilliseconds": {
+              "type": "number"
+            },
+            "query.writeRequestsPerSecond": {
+              "type": "number"
+            },
+            "query.writeTimeoutsPerSecond": {
+              "type": "number"
+            },
+            "query.writeUnavailablesPerSecond": {
+              "type": "number"
+            },
+            "software.version": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "storage.exceptionCount": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "client.connectedNativeClients",
+            "cluster.name",
+            "db.allMemtablesOffHeapSizeBytes",
+            "db.allMemtablesOnHeapSizeBytes",
+            "db.commitLogCompletedTasksPerSecond",
+            "db.commitLogPendindTasks",
+            "db.commitLogTotalSizeBytes",
+            "db.droppedBatchRemoveMessagesPerSecond",
+            "db.droppedBatchStoreMessagesPerSecond",
+            "db.droppedCounterMutationMessagesPerSecond",
+            "db.droppedHintMessagesPerSecond",
+            "db.droppedMutationMessagesPerSecond",
+            "db.droppedPagedRangeMessagesPerSecond",
+            "db.droppedRangeSliceMessagesPerSecond",
+            "db.droppedReadMessagesPerSecond",
+            "db.droppedReadRepairMessagesPerSecond",
+            "db.droppedRequestResponseMessagesPerSecond",
+            "db.droppedTraceMessagesPerSecond",
+            "db.keyCacheCapacityBytes",
+            "db.keyCacheHitRate",
+            "db.keyCacheHitsPerSecond",
+            "db.keyCacheRequestsPerSecond",
+            "db.keyCacheSizeBytes",
+            "db.liveSSTableCount",
+            "db.loadBytes",
+            "db.rowCacheCapacityBytes",
+            "db.rowCacheHitRate",
+            "db.rowCacheHitsPerSecond",
+            "db.rowCacheRequestsPerSecond",
+            "db.rowCacheSizeBytes",
+            "db.threadpool.internalAntiEntropyStageActiveTasks",
+            "db.threadpool.internalAntiEntropyStageCompletedTasks",
+            "db.threadpool.internalAntiEntropyStageCurrentlyBlockedTasks",
+            "db.threadpool.internalAntiEntropyStagePendingTasks",
+            "db.threadpool.internalCacheCleanupExecutorActiveTasks",
+            "db.threadpool.internalCacheCleanupExecutorCompletedTasks",
+            "db.threadpool.internalCacheCleanupExecutorCurrentlyBlockedTasks",
+            "db.threadpool.internalCacheCleanupExecutorPendingTasks",
+            "db.threadpool.internalCompactionExecutorActiveTasks",
+            "db.threadpool.internalCompactionExecutorCompletedTasks",
+            "db.threadpool.internalCompactionExecutorCurrentlyBlockedTasks",
+            "db.threadpool.internalCompactionExecutorPendingTasks",
+            "db.threadpool.internalGossipStageActiveTasks",
+            "db.threadpool.internalGossipStageCompletedTasks",
+            "db.threadpool.internalGossipStageCurrentlyBlockedTasks",
+            "db.threadpool.internalGossipStagePendingTasks",
+            "db.threadpool.internalHintsDispatcherActiveTasks",
+            "db.threadpool.internalHintsDispatcherCompletedTasks",
+            "db.threadpool.internalHintsDispatcherCurrentlyBlockedTasks",
+            "db.threadpool.internalHintsDispatcherPendingTasks",
+            "db.threadpool.internalInternalResponseStageActiveTasks",
+            "db.threadpool.internalInternalResponseStageCompletedTasks",
+            "db.threadpool.internalInternalResponseStagePCurrentlyBlockedTasks",
+            "db.threadpool.internalInternalResponseStagePendingTasks",
+            "db.threadpool.internalMemtableFlushWriterActiveTasks",
+            "db.threadpool.internalMemtableFlushWriterCompletedTasks",
+            "db.threadpool.internalMemtableFlushWriterCurrentlyBlockedTasks",
+            "db.threadpool.internalMemtableFlushWriterPendingTasks",
+            "db.threadpool.internalMemtablePostFlushActiveTasks",
+            "db.threadpool.internalMemtablePostFlushCompletedTasks",
+            "db.threadpool.internalMemtablePostFlushCurrentlyBlockedTasks",
+            "db.threadpool.internalMemtablePostFlushPendingTasks",
+            "db.threadpool.internalMemtableReclaimMemoryActiveTasks",
+            "db.threadpool.internalMemtableReclaimMemoryCompletedTasks",
+            "db.threadpool.internalMemtableReclaimMemoryCurrentlyBlockedTasks",
+            "db.threadpool.internalMemtableReclaimMemoryPendingTasks",
+            "db.threadpool.internalMigrationStageActiveTasks",
+            "db.threadpool.internalMigrationStageCompletedTasks",
+            "db.threadpool.internalMigrationStageCurrentlyBlockedTasks",
+            "db.threadpool.internalMigrationStagePendingTasks",
+            "db.threadpool.internalMiscStageActiveTasks",
+            "db.threadpool.internalMiscStageCompletedTasks",
+            "db.threadpool.internalMiscStageCurrentlyBlockedTasks",
+            "db.threadpool.internalMiscStagePendingTasks",
+            "db.threadpool.internalPendingRangeCalculatorActiveTasks",
+            "db.threadpool.internalPendingRangeCalculatorCompletedTasks",
+            "db.threadpool.internalPendingRangeCalculatorCurrentlyBlockedTasks",
+            "db.threadpool.internalPendingRangeCalculatorPendingTasks",
+            "db.threadpool.internalSamplerActiveTasks",
+            "db.threadpool.internalSamplerCompletedTasks",
+            "db.threadpool.internalSamplerCurrentlyBlockedTasks",
+            "db.threadpool.internalSamplerPendingTasks",
+            "db.threadpool.internalSecondaryIndexManagementActiveTasks",
+            "db.threadpool.internalSecondaryIndexManagementCompletedTasks",
+            "db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks",
+            "db.threadpool.internalSecondaryIndexManagementPendingTasks",
+            "db.threadpool.internalValidationExecutorActiveTasks",
+            "db.threadpool.internalValidationExecutorCompletedTasks",
+            "db.threadpool.internalValidationExecutorCurrentlyBlockedTasks",
+            "db.threadpool.internalValidationExecutorPendingTasks",
+            "db.threadpool.requestCounterMutationStageActiveTasks",
+            "db.threadpool.requestCounterMutationStageCompletedTasks",
+            "db.threadpool.requestCounterMutationStageCurrentlyBlockedTasks",
+            "db.threadpool.requestCounterMutationStagePendingTasks",
+            "db.threadpool.requestMutationStageActiveTasks",
+            "db.threadpool.requestMutationStageCompletedTasks",
+            "db.threadpool.requestMutationStageCurrentlyBlockedTasks",
+            "db.threadpool.requestMutationStagePendingTasks",
+            "db.threadpool.requestReadRepairStageActiveTasks",
+            "db.threadpool.requestReadRepairStageCompletedTasks",
+            "db.threadpool.requestReadRepairStageCurrentlyBlockedTasks",
+            "db.threadpool.requestReadRepairStagePendingTasks",
+            "db.threadpool.requestReadStageActiveTasks",
+            "db.threadpool.requestReadStageCompletedTasks",
+            "db.threadpool.requestReadStageCurrentlyBlockedTasks",
+            "db.threadpool.requestReadStagePendingTasks",
+            "db.threadpool.requestRequestResponseStageActiveTasks",
+            "db.threadpool.requestRequestResponseStageCompletedTasks",
+            "db.threadpool.requestRequestResponseStageCurrentlyBlockedTasks",
+            "db.threadpool.requestRequestResponseStagePendingTasks",
+            "db.threadpool.requestViewMutationStageActiveTasks",
+            "db.threadpool.requestViewMutationStageCompletedTasks",
+            "db.threadpool.requestViewMutationStageCurrentlyBlockedTasks",
+            "db.threadpool.requestViewMutationStagePendingTasks",
+            "db.totalHintsInProgress",
+            "db.totalHintsPerSecond",
+            "event_type",
+            "query.CASReadRequestsPerSecond",
+            "query.CASWriteRequestsPerSecond",
+            "query.rangeSliceRequestsPerSecond",
+            "query.rangeSliceTimeoutsPerSecond",
+            "query.rangeSliceUnavailablesPerSecond",
+            "query.readLatency50thPercentileMilliseconds",
+            "query.readLatency75thPercentileMilliseconds",
+            "query.readLatency95thPercentileMilliseconds",
+            "query.readLatency98thPercentileMilliseconds",
+            "query.readLatency999thPercentileMilliseconds",
+            "query.readLatency99thPercentileMilliseconds",
+            "query.readRequestsPerSecond",
+            "query.readTimeoutsPerSecond",
+            "query.readUnavailablesPerSecond",
+            "query.viewWriteRequestsPerSecond",
+            "query.writeLatency50thPercentileMilliseconds",
+            "query.writeLatency75thPercentileMilliseconds",
+            "query.writeLatency95thPercentileMilliseconds",
+            "query.writeLatency98thPercentileMilliseconds",
+            "query.writeLatency999thPercentileMilliseconds",
+            "query.writeLatency99thPercentileMilliseconds",
+            "query.writeRequestsPerSecond",
+            "query.writeTimeoutsPerSecond",
+            "query.writeUnavailablesPerSecond",
+            "software.version",
+            "storage.exceptionCount"
+          ]
+        }
+      ],
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "name": {
+      "minLength": 1,
+      "pattern": "^com.newrelic.cassandra$",
+      "type": "string"
+    },
+    "protocol_version": {
+      "minLength": 1,
+      "pattern": "^2$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "protocol_version",
+    "integration_version",
+    "metrics",
+    "inventory",
+    "events"
+  ],
+  "type": "object"
+}
