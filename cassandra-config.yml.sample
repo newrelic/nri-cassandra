@@ -8,6 +8,15 @@ instances:
           port: 7199
           username: testUser
           password: testPassword
+
+          # New users should leave this property as `true`, to identify the
+          # monitored entities as `remote`. Setting this property to `false` (the
+          # default value) is deprecated and will be removed soon, disallowing
+          # entities that are identified as `local`.
+          # Please check the documentation to get more information about local
+          # versus remote entities:
+          # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
+          remote_monitoring: true
       labels:
           env: production
           role: cassandra
@@ -15,6 +24,15 @@ instances:
       command: inventory
       arguments:
           config_path: /etc/cassandra/cassandra.yaml
+
+          # New users should leave this property as `true`, to identify the
+          # monitored entities as `remote`. Setting this property to `false` (the
+          # default value) is deprecated and will be removed soon, disallowing
+          # entities that are identified as `local`.
+          # Please check the documentation to get more information about local
+          # versus remote entities:
+          # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
+          remote_monitoring: true
       labels:
           env: production
           role: cassandra
