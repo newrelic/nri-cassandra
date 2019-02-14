@@ -1,0 +1,19 @@
+version: '3.1'
+
+services:
+  cassandra:
+    build:
+      context: ../../
+      dockerfile: tests/integration/cassandra/Dockerfile
+    restart: always
+    ports:
+    - "7199:7199"
+    links:
+    - nri-cassandra
+
+  nri-cassandra:
+    build:
+      context: ../../
+      dockerfile: tests/integration/Dockerfile
+    volumes:
+    - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml

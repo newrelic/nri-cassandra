@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "properties": {
+    "integration_version": {
+      "minLength": 1,
+      "pattern": "^2.[0-9].[0-9]$",
+      "type": "string"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "items": {
+              "properties": {},
+              "required": []
+            },
+            "type": "array"
+          },
+          "inventory": {
+            "maxProperties": 0,
+            "properties": {},
+            "required": [],
+            "type": "object"
+          },
+          "metrics": {
+            "items": {
+              "properties": {},
+              "required": []
+            },
+            "maxItems": 0,
+            "type": "array"
+          }
+        },
+        "required": [
+          "metrics",
+          "inventory",
+          "events"
+        ]
+      }
+    },
+    "name": {
+      "minLength": 1,
+      "pattern": "^com.newrelic.cassandra$",
+      "type": "string"
+    },
+    "protocol_version": {
+      "minLength": 1,
+      "pattern": "^2$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "protocol_version",
+    "integration_version",
+    "data"
+  ],
+  "type": "object"
+}
