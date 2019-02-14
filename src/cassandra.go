@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/persist"
 	"strconv"
@@ -92,8 +91,7 @@ func createIntegration() (*integration.Integration, error) {
 
 func entity(i *integration.Integration) (*integration.Entity, error) {
 	if args.RemoteMonitoring {
-		n := fmt.Sprintf("%s", args.Hostname)
-		return i.Entity(n, entityRemoteType)
+		return i.Entity(args.Hostname, entityRemoteType)
 	}
 
 	return i.LocalEntity(), nil
