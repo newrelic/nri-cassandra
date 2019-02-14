@@ -5,7 +5,6 @@ import (
 
 	"github.com/newrelic/infra-integrations-sdk/data/inventory"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
-	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/infra-integrations-sdk/persist"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +30,7 @@ func TestPopulateMetrics(t *testing.T) {
 	}
 
 	s := metric.NewSet("eventType", persist.NewInMemoryStore())
-	populateMetrics(log.Discard, s, rawMetrics, metricDefinition)
+	populateMetrics(s, rawMetrics, metricDefinition)
 
 	sample := s.Metrics
 

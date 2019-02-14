@@ -11,7 +11,7 @@ import (
 // getMetrics will gather all node and keyspace level metrics and return them as two maps
 // The main metrics map will contain all the keys got from JMX and the keyspace metrics map
 // Will contain maps for each <keyspace>.<columnFamily> found while inspecting JMX metrics.
-func getMetrics(l log.Logger) (map[string]interface{}, map[string]map[string]interface{}, error) {
+func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, error) {
 	internalKeyspaces := map[string]struct{}{
 		"OpsCenter":          {},
 		"system":             {},
@@ -32,7 +32,7 @@ func getMetrics(l log.Logger) (map[string]interface{}, map[string]map[string]int
 	for _, query := range jmxPatterns {
 		results, err := jmx.Query(query, args.Timeout)
 		if err != nil {
-			l.Debugf("Error querying %s: %v", query, err)
+			log.Debug("Error querying %s: %v", query, err)
 			continue
 		}
 		for key, value := range results {
@@ -74,7 +74,7 @@ func getMetrics(l log.Logger) (map[string]interface{}, map[string]map[string]int
 	return metrics, columnFamilyMetrics, nil
 }
 
-func populateMetrics(l log.Logger, s *metric.Set, metrics map[string]interface{}, definition map[string][]interface{}) {
+func populateMetrics(s *metric.Set, metrics map[string]interface{}, definition map[string][]interface{}) {
 	notFoundMetrics := make([]string, 0)
 	for metricName, metricConf := range definition {
 		rawSource := metricConf[0]
@@ -97,7 +97,7 @@ func populateMetrics(l log.Logger, s *metric.Set, metrics map[string]interface{}
 		case func(map[string]interface{}) (float64, bool):
 			rawMetric, ok = source(metrics)
 		default:
-			l.Debugf("Invalid raw source metric for %s", metricName)
+			log.Debug("Invalid raw source metric for %s", metricName)
 			continue
 		}
 
@@ -109,11 +109,11 @@ func populateMetrics(l log.Logger, s *metric.Set, metrics map[string]interface{}
 
 		err := s.SetMetric(metricName, rawMetric, metricType)
 		if err != nil {
-			l.Errorf("setting value: %s", err)
+			log.Error("setting value: %s", err)
 			continue
 		}
 	}
 	if len(notFoundMetrics) > 0 {
-		l.Debugf("Can't find raw metrics in results for keys: %v", notFoundMetrics)
+		log.Debug("Can't find raw metrics in results for keys: %v", notFoundMetrics)
 	}
 }
