@@ -7,8 +7,7 @@ RUN go get -d github.com/newrelic/nri-cassandra/... && \
 FROM golang:1.10 as builder-jmx
 RUN go get -d github.com/newrelic/nri-jmx/... && \
     cd /go/src/github.com/newrelic/nri-jmx && \
-    make && \
-    ls /go/src/github.com/newrelic/nri-jmx/bin
+    make
 
 FROM newrelic/infrastructure:latest
 COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/bin/nr-cassandra /var/db/newrelic-infra/newrelic-integrations/bin/nr-cassandra
