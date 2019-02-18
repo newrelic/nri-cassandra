@@ -7,8 +7,7 @@ RUN go get -d github.com/newrelic/nri-cassandra/... && \
 FROM maven:3-jdk-11 as builder-jmx
 RUN git clone https://github.com/newrelic/nrjmx && \
     cd nrjmx && \
-    mvn clean package -P \!deb,\!rpm && \
-    ls -R .
+    mvn clean package -P \!deb,\!rpm 
 
 FROM newrelic/infrastructure:latest
 COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/bin/nr-cassandra /var/db/newrelic-infra/newrelic-integrations/bin/nr-cassandra
