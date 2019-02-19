@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/newrelic/infra-integrations-sdk/data/metric"
-	"github.com/newrelic/infra-integrations-sdk/persist"
+	"os"
 	"strconv"
 
 	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
+	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/newrelic/infra-integrations-sdk/jmx"
 	"github.com/newrelic/infra-integrations-sdk/log"
-	"os"
+	"github.com/newrelic/infra-integrations-sdk/persist"
 )
 
 type argumentList struct {
@@ -51,15 +51,12 @@ func main() {
 	if args.HasMetrics() {
 		rawMetrics, allColumnFamilies, err := getMetrics()
 		fatalIfErr(err)
-
-		hostnameAttr := metric.Attr("hostname", args.Hostname)
-		portAttr := metric.Attr("port", strconv.Itoa(args.Port))
-		ms := e.NewMetricSet("CassandraSample", hostnameAttr, portAttr)
+		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
 		populateMetrics(ms, rawMetrics, metricsDefinition)
 		populateMetrics(ms, rawMetrics, commonDefinition)
 
 		for _, columnFamilyMetrics := range allColumnFamilies {
-			s := e.NewMetricSet("CassandraColumnFamilySample")
+			s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
 			populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
 			populateMetrics(s, rawMetrics, commonDefinition)
 		}
@@ -72,6 +69,21 @@ func main() {
 	}
 
 	fatalIfErr(i.Publish())
+}
+
+func metricSet(e *integration.Entity, eventType, hostname string, port int, remoteMonitoring bool) *metric.Set {
+	if remoteMonitoring {
+		return e.NewMetricSet(
+			eventType,
+			metric.Attr("hostname", hostname),
+			metric.Attr("port", strconv.Itoa(port)),
+		)
+	}
+
+	return e.NewMetricSet(
+		eventType,
+		metric.Attr("port", strconv.Itoa(port)),
+	)
 }
 
 func createIntegration() (*integration.Integration, error) {
