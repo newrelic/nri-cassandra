@@ -1,6 +1,6 @@
 name: com.newrelic.cassandra
 description: Reports metrics and inventory for a Cassandra server
-protocol_version: 2
+protocol_version: 3
 os: linux
 
 commands:
