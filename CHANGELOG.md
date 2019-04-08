@@ -4,10 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.1.0 (2019-04-08)
+### Added
+- Upgraded to SDKv3.
+- Remote monitoring option. It enables monitoring multiple instances, 
+  more information can be found at the [official documentation page](https://docs.newrelic.com/docs/remote-monitoring-host-integrations).
+
 ## 2.0.3 (2018-12-04)
 ### Added
 - Fix bug that made db.keyspace, db.columnFamily,db.keyspaceAndColumnFamily to be filled with default values.
-
 
 ## 2.0.2 (2018-09-12)
 ### Added
