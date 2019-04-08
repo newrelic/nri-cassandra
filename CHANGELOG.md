@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.1.0 (2019-04-08)
 ### Added
-- Upgraded to SDKv3.
 - Remote monitoring option. It enables monitoring multiple instances, 
   more information can be found at the [official documentation page](https://docs.newrelic.com/docs/remote-monitoring-host-integrations).
 
