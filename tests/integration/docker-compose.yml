@@ -8,4 +8,12 @@ services:
     restart: always
     ports:
     - "7199:7199"
+    links:
+    - nri-cassandra
 
+  nri-cassandra:
+    build:
+      context: ../../
+      dockerfile: tests/integration/Dockerfile
+    volumes:
+    - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml
