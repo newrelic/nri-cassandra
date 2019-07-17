@@ -7,7 +7,7 @@ RUN go get -d github.com/newrelic/nri-cassandra/... && \
 FROM maven:3-jdk-11 as builder-jmx
 RUN git clone https://github.com/newrelic/nrjmx && \
     cd nrjmx && \
-    mvn clean package -P \!deb,\!rpm 
+    mvn package -DskipTests -P \!deb,\!rpm,\!test
 
 FROM newrelic/infrastructure:latest
 ENV NRIA_IS_FORWARD_ONLY true
