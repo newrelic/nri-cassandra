@@ -30,7 +30,7 @@ var (
 
 	iVersion = "1.1.0"
 
-	defaultBinPath  = "/nr-cassandra"
+	defaultBinPath  = "/nri-cassandra"
 	defaultHostname = "cassandra"
 
 	schemaFolder = fmt.Sprintf("json-schema-files-%s", envCassandraVersion)

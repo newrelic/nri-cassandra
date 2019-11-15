@@ -1,8 +1,8 @@
 FROM golang:1.10 as builder-cassandra
-RUN go get -d github.com/newrelic/nri-cassandra/... && \
-    cd /go/src/github.com/newrelic/nri-cassandra && \
+COPY . /go/src/github.com/newrelic/nri-cassandra/
+RUN cd /go/src/github.com/newrelic/nri-cassandra && \
     make && \
-    strip ./bin/nr-cassandra
+    strip ./bin/nri-cassandra
 
 FROM maven:3-jdk-11 as builder-jmx
 RUN git clone https://github.com/newrelic/nrjmx && \
@@ -13,7 +13,7 @@ FROM newrelic/infrastructure:latest
 ENV NRIA_IS_FORWARD_ONLY true
 ENV NRIA_K8S_INTEGRATION true
 
-COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/bin/nr-cassandra /nri-sidecar/newrelic-infra/newrelic-integrations/bin/nr-cassandra
+COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/bin/nri-cassandra /nri-sidecar/newrelic-infra/newrelic-integrations/bin/nri-cassandra
 COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/cassandra-definition.yml /nri-sidecar/newrelic-infra/newrelic-integrations/definition.yaml
 COPY --from=builder-jmx /nrjmx/bin /usr/bin/
 
