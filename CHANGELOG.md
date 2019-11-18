@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.4.0 (2019-11-18)
+### Changed
+- Renamed the integration executable from nr-cassandra to nri-cassandra in order to be consistent with the package naming. **Important Note:** if you have any security module rules (eg. SELinux), alerts or automation that depends on the name of this binary, these will have to be updated.
 ## 2.3.0 (2019-11-15)
 - Upgraded to SDK v3.5.0. This version provides improvements for jmx support and also better error handling.
 
