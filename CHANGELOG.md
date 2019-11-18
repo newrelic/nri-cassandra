@@ -5,12 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 2.3.1 - 2019-11-18
+## 2.3.0 (2019-11-18)
 ### Added
 - Add nrjmx version dependency to 1.5.2, so jmxterm can be bundled within
   package.
-
-## 2.3.0 (2019-11-15)
 - Upgraded to SDK v3.5.0. This version provides improvements for jmx support and also better error handling.
 
 ## 2.2.0 (2019-04-29)
