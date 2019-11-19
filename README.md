@@ -16,7 +16,7 @@ It is required to configure the JMX user and password. Follow the steps in [Enab
 ## Installation
 * Download an archive file for the Cassandra Integration
 * Place the executables under `bin` directory and the definition file `cassandra-definition.yml` in `/var/db/newrelic-infra/newrelic-integrations`
-* Set execution permissions for the binary files `nr-cassandra` and `nrjmx` (if required)
+* Set execution permissions for the binary files `nri-cassandra` and `nrjmx` (if required)
 * Place the integration configuration file `cassandra-config.yml.sample` in `/etc/newrelic-infra/integrations.d` and update its values.
 
 ## Usage
@@ -33,13 +33,13 @@ Assuming that you have source code you can build and run the Cassandra Integrati
 ```bash
 $ make
 ```
-* The command above will execute tests for the Cassandra Integration and build an executable file called `nr-cassandra` in `bin` directory.
+* The command above will execute tests for the Cassandra Integration and build an executable file called `nri-cassandra` in `bin` directory.
 ```bash
-$ ./bin/nr-cassandra --hostname <JMX hostname> --port <JMX port> --username <username> --password <password> --config_path <path to cassandra config>
+$ ./bin/nri-cassandra --hostname <JMX hostname> --port <JMX port> --username <username> --password <password> --config_path <path to cassandra config>
 ```
-* If you want to know more about usage of `./bin/nr-cassandra` check
+* If you want to know more about usage of `./bin/nri-cassandra` check
 ```bash
-$ ./bin/nr-cassandra --help
+$ ./bin/nri-cassandra --help
 ```
 
 For managing external dependencies [govendor tool](https://github.com/kardianos/govendor) is used. It is required to lock all external dependencies to specific version (if possible) into vendor directory.

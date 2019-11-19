@@ -6,12 +6,12 @@ os: linux
 commands:
     metrics:
         command:
-          - ./bin/nr-cassandra
+          - ./bin/nri-cassandra
           - --metrics
         interval: 30
     inventory:
         command:
-          - ./bin/nr-cassandra
+          - ./bin/nri-cassandra
           - --inventory
         interval: 60
         prefix: config/cassandra

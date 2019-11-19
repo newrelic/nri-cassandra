@@ -27,7 +27,7 @@ type argumentList struct {
 
 const (
 	integrationName    = "com.newrelic.cassandra"
-	integrationVersion = "2.1.0"
+	integrationVersion = "2.4.0"
 
 	entityRemoteType = "node"
 )
