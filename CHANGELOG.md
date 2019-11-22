@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## 2.4.0 (TBC)
+## 2.4.0 (2019-11-22)
 ### Changed
 - Renamed the integration executable from nr-cassandra to nri-cassandra in order to be consistent with the package naming. **Important Note:** if you have any security module rules (eg. SELinux), alerts or automation that depends on the name of this binary, these will have to be updated.
 
