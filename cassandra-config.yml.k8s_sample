@@ -1,0 +1,20 @@
+  cassandra-configuration.yml: |
+    ---
+    # Run auto discovery to find pods with label "app=cassandra"
+    # https://docs.newrelic.com/docs/integrations/host-integrations/installation/container-auto-discovery
+    discovery:
+      command:
+        # Run NRI Discovery for Kubernetes
+        # https://github.com/newrelic/nri-discovery-kubernetes
+        exec: /var/db/newrelic-infra/nri-discovery-kubernetes
+        match:
+          label.app: cassandra
+    integrations:
+      - name: nri-cassandra
+        env:
+          # Use the discovered IP as the host address
+          HOSTNAME: ${discovery.ip}
+          PORT: 7199
+          USERNAME: cassandra
+          PASSWORD: cassandra
+          METRICS: 1
