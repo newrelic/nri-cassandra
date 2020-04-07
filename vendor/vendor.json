@@ -11,66 +11,74 @@
 		{
 			"checksumSHA1": "ZfId5ZYn7jmL0xTxooHcxrLlXoA=",
 			"path": "github.com/newrelic/infra-integrations-sdk/args",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
-			"checksumSHA1": "KaZLSd/JUZz/mqfW3jFd1j2QdWA=",
+			"checksumSHA1": "31zRckJsW2ysGejUOfODuQJfWlo=",
+			"path": "github.com/newrelic/infra-integrations-sdk/data/attribute",
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
+		},
+		{
+			"checksumSHA1": "g3YmAYfuMWFGW3ZoAxOatE9IZPY=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/event",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
 			"checksumSHA1": "EOoxXGqFDPkCvj7wec2S5kCXY2I=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/inventory",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
-			"checksumSHA1": "B7mdbYyNHbBY4/x65J4zvUXn0Wk=",
+			"checksumSHA1": "0c+7FpKvJY1fop09wCVo3ZfsRAU=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/metric",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
-			"checksumSHA1": "DdUizp/J5c7mAFZg2hoz4rRPOYM=",
+			"checksumSHA1": "Ri3ma4J1Ta97oPBA8baxWgRLGqA=",
 			"path": "github.com/newrelic/infra-integrations-sdk/integration",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
-			"checksumSHA1": "Cz0x0qEmD9hIDSBaBVRQI4EUxwM=",
+			"checksumSHA1": "wdNmtP0ozpMiugaKHMg9W+aW9sw=",
 			"path": "github.com/newrelic/infra-integrations-sdk/jmx",
-			"revision": "d20f61f8131bc4098cdc34c0e3d206c4783dd2b2",
-			"revisionTime": "2019-11-14T09:00:00Z",
-			"version": "v3.5.0",
-			"versionExact": "v3.5.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
-			"checksumSHA1": "6/DhD+/LhC/k3NaLgkpd6iE8b5E=",
+			"checksumSHA1": "u/P0xCzi5jNy640ldUW5yeG3d0U=",
 			"path": "github.com/newrelic/infra-integrations-sdk/log",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
 			"checksumSHA1": "BsHp62Etporko0d+4GpVxrP2qtw=",
 			"path": "github.com/newrelic/infra-integrations-sdk/persist",
-			"revision": "1d56d083ff58c63604755586fe1a65036a064de7",
-			"revisionTime": "2019-04-25T14:09:40Z",
-			"version": "=v3.1.0",
-			"versionExact": "v3.1.0"
+			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
+			"revisionTime": "2020-04-07T15:08:29Z",
+			"version": "v3.6.2",
+			"versionExact": "v3.6.2"
 		},
 		{
 			"checksumSHA1": "ljd3FhYRJ91cLZz3wsH9BQQ2JbA=",

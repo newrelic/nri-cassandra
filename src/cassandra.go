@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 	"os"
 	"strconv"
 
@@ -27,7 +28,7 @@ type argumentList struct {
 
 const (
 	integrationName    = "com.newrelic.cassandra"
-	integrationVersion = "2.4.0"
+	integrationVersion = "2.4.1"
 
 	entityRemoteType = "node"
 )
@@ -38,14 +39,17 @@ var (
 
 func main() {
 	i, err := createIntegration()
-
 	fatalIfErr(err)
-	log.SetupLogging(args.Verbose)
 
 	e, err := entity(i)
 	fatalIfErr(err)
 
-	fatalIfErr(jmx.Open(args.Hostname, strconv.Itoa(args.Port), args.Username, args.Password))
+	var opts []jmx.Option
+	if args.Verbose {
+		opts = append(opts, jmx.WithVerbose())
+	}
+
+	fatalIfErr(jmx.Open(args.Hostname, strconv.Itoa(args.Port), args.Username, args.Password, opts...))
 	defer jmx.Close()
 
 	if args.HasMetrics() {
@@ -75,14 +79,14 @@ func metricSet(e *integration.Entity, eventType, hostname string, port int, remo
 	if remoteMonitoring {
 		return e.NewMetricSet(
 			eventType,
-			metric.Attr("hostname", hostname),
-			metric.Attr("port", strconv.Itoa(port)),
+			attribute.Attr("hostname", hostname),
+			attribute.Attr("port", strconv.Itoa(port)),
 		)
 	}
 
 	return e.NewMetricSet(
 		eventType,
-		metric.Attr("port", strconv.Itoa(port)),
+		attribute.Attr("port", strconv.Itoa(port)),
 	)
 }
 
