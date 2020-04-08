@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.4.1 (2020-04-07)
+### Changed
+- Upgraded to SDK v3.6.2. This version provides a fix for an issue which caused some debug logs to be lost.
 
 ## 2.4.0 (2019-11-22)
 ### Changed
