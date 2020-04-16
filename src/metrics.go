@@ -33,6 +33,9 @@ func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, er
 		results, err := jmx.Query(query, args.Timeout)
 		if err != nil {
 			log.Debug("Error querying %s: %v", query, err)
+			if jmx.IsJmxClientError(err) {
+				return nil, nil, err
+			}
 			continue
 		}
 		for key, value := range results {

@@ -11,74 +11,74 @@
 		{
 			"checksumSHA1": "ZfId5ZYn7jmL0xTxooHcxrLlXoA=",
 			"path": "github.com/newrelic/infra-integrations-sdk/args",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "31zRckJsW2ysGejUOfODuQJfWlo=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/attribute",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "g3YmAYfuMWFGW3ZoAxOatE9IZPY=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/event",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "EOoxXGqFDPkCvj7wec2S5kCXY2I=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/inventory",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "0c+7FpKvJY1fop09wCVo3ZfsRAU=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/metric",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "Ri3ma4J1Ta97oPBA8baxWgRLGqA=",
 			"path": "github.com/newrelic/infra-integrations-sdk/integration",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
-			"checksumSHA1": "wdNmtP0ozpMiugaKHMg9W+aW9sw=",
+			"checksumSHA1": "qeiVVVhOZFzI3PeoQcpZlWMjnGk=",
 			"path": "github.com/newrelic/infra-integrations-sdk/jmx",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "u/P0xCzi5jNy640ldUW5yeG3d0U=",
 			"path": "github.com/newrelic/infra-integrations-sdk/log",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "BsHp62Etporko0d+4GpVxrP2qtw=",
 			"path": "github.com/newrelic/infra-integrations-sdk/persist",
-			"revision": "34eb1a13b49017a26d244b67f1c1b2c34a58dea6",
-			"revisionTime": "2020-04-07T15:08:29Z",
-			"version": "v3.6.2",
-			"versionExact": "v3.6.2"
+			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
+			"revisionTime": "2020-04-15T14:14:31Z",
+			"version": "v3.6.3",
+			"versionExact": "v3.6.3"
 		},
 		{
 			"checksumSHA1": "ljd3FhYRJ91cLZz3wsH9BQQ2JbA=",
