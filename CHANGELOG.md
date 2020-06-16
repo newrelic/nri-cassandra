@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.4.3 (2020-06-16)
+### Fixed
+- Updated the configuration sample to include the hostname for inventory required
+  for entity naming.
+
 ## 2.4.2 (2020-04-16)
 ### Changed
 - Upgraded to SDK v3.6.3. This version provides improvements for jmx error handling.
