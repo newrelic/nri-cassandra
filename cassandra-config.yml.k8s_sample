@@ -18,3 +18,4 @@
           USERNAME: cassandra
           PASSWORD: cassandra
           METRICS: 1
+          REMOTE_MONITORING: true
