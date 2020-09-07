@@ -373,6 +373,15 @@
             "db.totalHintsPerSecond": {
               "type": "number"
             },
+            "db.hintsSucceededPerSecond": {
+              "type": "number"
+            },
+            "db.hintsFailedPerSecond": {
+              "type": "number"
+            },
+            "db.hintsTimedOutPerSecond": {
+              "type": "number"
+            },
             "event_type": {
               "minLength": 1,
               "pattern": "^CassandraSample$",

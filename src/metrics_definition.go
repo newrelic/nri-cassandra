@@ -98,9 +98,13 @@ var metricsDefinition = map[string][]interface{}{
 	"db.allMemtablesOnHeapSizeBytes":  {"org.apache.cassandra.metrics:type=Table,name=AllMemtablesHeapSize,attr=Value", metric.GAUGE},
 	"db.allMemtablesOffHeapSizeBytes": {"org.apache.cassandra.metrics:type=Table,name=AllMemtablesOffHeapSize,attr=Value", metric.GAUGE},
 
-	"db.loadBytes":            {"org.apache.cassandra.metrics:type=Storage,name=Load,attr=Count", metric.GAUGE},
-	"db.totalHintsPerSecond":  {"org.apache.cassandra.metrics:type=Storage,name=TotalHints,attr=Count", metric.RATE},
-	"db.totalHintsInProgress": {"org.apache.cassandra.metrics:type=Storage,name=TotalHintsInProgress,attr=Count", metric.GAUGE},
+	"db.loadBytes":               {"org.apache.cassandra.metrics:type=Storage,name=Load,attr=Count", metric.GAUGE},
+	"db.totalHintsPerSecond":     {"org.apache.cassandra.metrics:type=Storage,name=TotalHints,attr=Count", metric.RATE},
+	"db.totalHintsInProgress":    {"org.apache.cassandra.metrics:type=Storage,name=TotalHintsInProgress,attr=Count", metric.GAUGE},
+	"db.hintsSucceededPerSecond": {"org.apache.cassandra.metrics:type=HintsService,name=HintsSucceeded,attr=OneMinuteRate", metric.GAUGE},
+	"db.hintsFailedPerSecond":    {"org.apache.cassandra.metrics:type=HintsService,name=HintsFailed,attr=OneMinuteRate", metric.GAUGE},
+	"db.hintsTimedOutPerSecond":  {"org.apache.cassandra.metrics:type=HintsService,name=HintsTimedOut,attr=OneMinuteRate", metric.GAUGE},
+	"db.hintedHandoffManager":    {"org.apache.cassandra.metrics:type=HintedHandOffManager,name=*,attr=Count", metric.GAUGE},
 
 	"db.keyCacheCapacityBytes":     {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Capacity,attr=Value", metric.GAUGE},
 	"db.keyCacheHitsPerSecond":     {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Hits,attr=OneMinuteRate", metric.GAUGE},
@@ -234,6 +238,10 @@ var jmxPatterns = []string{
 	"org.apache.cassandra.metrics:type=Storage,name=Load",
 	"org.apache.cassandra.metrics:type=Storage,name=TotalHints",
 	"org.apache.cassandra.metrics:type=Storage,name=TotalHintsInProgress",
+	"org.apache.cassandra.metrics:type=HintsService,name=HintsSucceeded",
+	"org.apache.cassandra.metrics:type=HintsService,name=HintsFailed",
+	"org.apache.cassandra.metrics:type=HintsService,name=HintsTimedout",
+	"org.apache.cassandra.metrics:type=HintedHandOffManager,name=*",
 	"org.apache.cassandra.metrics:type=Cache,scope=*,name=*",
 	"org.apache.cassandra.metrics:type=CommitLog,name=*",
 	// Added June 13, 2018
