@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.5.0 (2020-09-07)
+### Changed
+- Add hinted handoff manager metrics
+
 ## 2.4.2 (2020-04-16)
 ### Changed
 - Upgraded to SDK v3.6.3. This version provides improvements for jmx error handling.
