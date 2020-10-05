@@ -34,5 +34,7 @@ target/
 # Vim session
 Session.vim
 
-bin/
+.idea/
+
+#Goreleaser
 dist/
