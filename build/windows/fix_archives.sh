@@ -32,13 +32,13 @@ for zip_dirty in $(find dist -regex ".*_dirty\.\(zip\)");do
   mv ${ZIP_CONTENT_PATH}/${INTEGRATION}-win-config.yml.sample "${CONF_IN_ZIP_PATH}"
 
   echo "===> Embeding nrjmx"
-  JMX_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New Relic/nrjmx/"
+  JMX_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New Relic/nrjmx"
   mkdir -p "${JMX_IN_ZIP_PATH}"
   JMX_REPO="newrelic/nrjmx"
   curl https://raw.githubusercontent.com/newrelic/nrjmx/master/bin/nrjmx.bat --output "${JMX_IN_ZIP_PATH}/nrjmx.bat"
-  #latest_jmx_tag=$(curl --silent "https://api.github.com/repos/${JMX_REPO}/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/' | cut -d v -f2)
-  latest_jmx_tag='v1.5.2'
-  curl -SL "http://download.newrelic.com/infrastructure_agent/binaries/linux/noarch/nrjmx_linux_${latest_jmx_tag}_noarch.tar.gz" | tar xz; cp usr/bin/nrjmx.jar "${JMX_IN_ZIP_PATH}/nrjmx.jar"
+  #latest_jmx_version=$(curl --silent "https://api.github.com/repos/${JMX_REPO}/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/' | cut -d v -f2)
+  latest_jmx_version='1.5.2'
+  curl -SL "http://download.newrelic.com/infrastructure_agent/binaries/linux/noarch/nrjmx_linux_${latest_jmx_version}_noarch.tar.gz" | tar xz; cp usr/bin/nrjmx.jar "${JMX_IN_ZIP_PATH}/nrjmx.jar"
 
   echo "===> Creating zip ${ZIP_CLEAN}"
   cd "${ZIP_CONTENT_PATH}"
