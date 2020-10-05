@@ -7,6 +7,10 @@ set -e
 #
 PROJECT_PATH=$1
 
+
+
+
+
 for zip_dirty in $(find dist -regex ".*_dirty\.\(zip\)");do
   zip_file_name=${zip_dirty:5:${#zip_dirty}-(5+10)} # Strips begining and end chars
   ZIP_CLEAN="${zip_file_name}.zip"
@@ -30,6 +34,12 @@ for zip_dirty in $(find dist -regex ".*_dirty\.\(zip\)");do
   mv ${ZIP_CONTENT_PATH}/nri-${INTEGRATION}.exe "${AGENT_DIR_IN_ZIP_PATH}/bin"
   mv ${ZIP_CONTENT_PATH}/${INTEGRATION}-win-definition.yml "${AGENT_DIR_IN_ZIP_PATH}"
   mv ${ZIP_CONTENT_PATH}/${INTEGRATION}-win-config.yml.sample "${CONF_IN_ZIP_PATH}"
+
+  echo "===> Embed nrjmx"
+  JMX_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New Relic/nrjmx/"
+  curl https://raw.githubusercontent.com/newrelic/nrjmx/master/bin/nrjmx.bat --output JMX_IN_ZIP_PATH/nrjmx.bat
+  latest_tag=$(curl --silent "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name":' |  sed -E 's/.*"([^"]+)".*/\1/' | cut -d v -f2)
+  curl -SL http://download.newrelic.com/infrastructure_agent/binaries/linux/noarch/nrjmx_linux_${latest_tag}_noarch.tar.gz | tar xz; cp usr/bin/nrjmx.jar JMX_IN_ZIP_PATH/nrjmx.jar
 
   echo "===> Creating zip ${ZIP_CLEAN}"
   cd "${ZIP_CONTENT_PATH}"
