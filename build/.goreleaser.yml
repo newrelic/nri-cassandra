@@ -15,15 +15,11 @@ builds:
     #  - -s -w -X github.com/newrelic/nri-flex/internal/load.IntegrationVersion={{.Version}}
     goos:
       - linux
-      - darwin
     goarch:
       - 386
       - amd64
 #      - arm
 #      - arm64
-    ignore:
-      - goos: darwin
-        goarch: 386
 
   - id: nri-cassandra-win
     main: ./src
