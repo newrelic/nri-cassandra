@@ -17,8 +17,8 @@ for zip_dirty in $(find dist -regex ".*_dirty\.\(zip\)");do
 
   ls -la "${zip_dirty}"
 
-  AGENT_DIR_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New\ Relic/newrelic-infra/newrelic-integrations/"
-  CONF_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New\ Relic/newrelic-infra/integrations.d/"
+  AGENT_DIR_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New Relic/newrelic-infra/newrelic-integrations/"
+  CONF_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New Relic/newrelic-infra/integrations.d/"
 
   mkdir -p "${AGENT_DIR_IN_ZIP_PATH}/bin"
   mkdir -p "${CONF_IN_ZIP_PATH}"
@@ -32,7 +32,7 @@ for zip_dirty in $(find dist -regex ".*_dirty\.\(zip\)");do
   mv ${ZIP_CONTENT_PATH}/${INTEGRATION}-win-config.yml.sample "${CONF_IN_ZIP_PATH}"
 
   echo "===> Embeding nrjmx"
-  JMX_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New\ Relic/nrjmx/"
+  JMX_IN_ZIP_PATH="${ZIP_CONTENT_PATH}/New Relic/nrjmx/"
   mkdir -p "${JMX_IN_ZIP_PATH}"
   JMX_REPO="newrelic/nrjmx"
   curl https://raw.githubusercontent.com/newrelic/nrjmx/master/bin/nrjmx.bat --output "${JMX_IN_ZIP_PATH}/nrjmx.bat"
@@ -41,7 +41,7 @@ for zip_dirty in $(find dist -regex ".*_dirty\.\(zip\)");do
 
   echo "===> Show jmx files"
   echo "JMX_IN_ZIP_PATH = $JMX_IN_ZIP_PATH"
-  ls -la ${JMX_IN_ZIP_PATH}
+  ls -la "${JMX_IN_ZIP_PATH}"
 
   echo "===> Creating zip ${ZIP_CLEAN}"
   cd "${ZIP_CONTENT_PATH}"
