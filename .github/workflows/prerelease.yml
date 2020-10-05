@@ -14,7 +14,8 @@ env:
   GPG_MAIL: 'info@newrelic.com' # infrastructure-eng@newrelic.com
   GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
   GPG_PRIVATE_KEY_BASE64: ${{ secrets.GPG_PRIVATE_KEY_BASE64 }} # base64 encoded
-  INTEGRATION: "cassandra"
+  INTEGRATION: 'cassandra'
+  NRJMX_VERSION: '1.5.2'
   ORIGINAL_REPO_NAME: 'newrelic/nri-cassandra'
   PFX_CERTIFICATE_BASE64: ${{ secrets.PFX_CERTIFICATE_BASE64 }} # base64 encoded
   PFX_PASSPHRASE:  ${{ secrets.PFX_PASSPHRASE }}
@@ -136,7 +137,7 @@ jobs:
       - name: Download zip from GH Release assets and extract .exe
         shell: pwsh
         run: |
-          build\windows\download_zip_extract_exe.ps1 "$env:INTEGRATION" ${{ matrix.goarch }} "$env:TAG" "$env:REPO_FULL_NAME"
+          build\windows\download_zip_extract_exe.ps1 "$env:INTEGRATION" ${{ matrix.goarch }} "$env:TAG" "$env:REPO_FULL_NAME" "$env:NRJMX_VERSION"
       - name: Create MSI
         shell: pwsh
         run: |
