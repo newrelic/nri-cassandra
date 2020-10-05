@@ -18,8 +18,8 @@ builds:
     goarch:
       - 386
       - amd64
-#      - arm
-#      - arm64
+      - arm
+      - arm64
 
   - id: nri-cassandra-win
     main: ./src
