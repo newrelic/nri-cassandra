@@ -50,11 +50,12 @@ nfpms:
       - deb
     bindir: "/var/db/newrelic-infra/newrelic-integrations/bin"
     files:
-      "cassandra-config.yml.sample": "/etc/newrelic-infra/integrations.d"
-      "cassandra-definition.yml": "/var/db/newrelic-infra/newrelic-integrations"
-      "CHANGELOG.md": "/usr/share/doc/nri-cassandra"
-      "README.md":  "/usr/share/doc/nri-cassandra"
-      "LICENSE": "/usr/share/doc/nri-cassandra"
+      "cassandra-config.yml.sample": "/etc/newrelic-infra/integrations.d/cassandra-config.yml.sample"
+      "CHANGELOG.md": "/usr/share/doc/nri-cassandra/CHANGELOG.md"
+      "README.md":  "/usr/share/doc/nri-cassandra/README.md"
+      "LICENSE": "/usr/share/doc/nri-cassandra/LICENSE"
+    config_files:
+      "cassandra-definition.yml": "/var/db/newrelic-infra/newrelic-integrations/cassandra-definition.yml"
     dependencies:
       - "newrelic-infra"
 
@@ -72,11 +73,12 @@ nfpms:
       - rpm
     bindir: "/var/db/newrelic-infra/newrelic-integrations/bin"
     files:
-      "cassandra-config.yml.sample": "/etc/newrelic-infra/integrations.d"
-      "cassandra-definition.yml": "/var/db/newrelic-infra/newrelic-integrations"
-      "CHANGELOG.md": "/usr/share/doc/nri-cassandra"
-      "README.md":  "/usr/share/doc/nri-cassandra"
-      "LICENSE": "/usr/share/doc/nri-cassandra"
+      "cassandra-config.yml.sample": "/etc/newrelic-infra/integrations.d/cassandra-config.yml.sample"
+      "CHANGELOG.md": "/usr/share/doc/nri-cassandra/CHANGELOG.md"
+      "README.md":  "/usr/share/doc/nri-cassandra/README.md"
+      "LICENSE": "/usr/share/doc/nri-cassandra/LICENSE"
+    config_files:
+      "cassandra-definition.yml": "/var/db/newrelic-infra/newrelic-integrations/cassandra-definition.yml"
     dependencies:
       - "newrelic-infra"
     overrides:
