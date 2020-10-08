@@ -34,7 +34,15 @@ target/
 # Vim session
 Session.vim
 
-.idea/
-
-#Goreleaser
+# Goreleaser
 dist/
+
+# Local development tools/files
+.idea
+.env
+.envrc
+*.gpg
+
+# build files
+src/versioninfo.json
+src/resource.syso
