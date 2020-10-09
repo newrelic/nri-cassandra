@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 
 	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
@@ -30,9 +31,9 @@ type argumentList struct {
 }
 
 const (
-	integrationName = "com.newrelic.cassandra"
-
-	entityRemoteType = "node"
+	integrationName      = "com.newrelic.cassandra"
+	shortIntegrationName = "cassandra"
+	entityRemoteType     = "node"
 )
 
 var (
@@ -47,7 +48,7 @@ func main() {
 	fatalIfErr(err)
 
 	if args.ShowVersion {
-		fmt.Printf("New Relic Cassandra integration \nVersion: %s \nPlatform: %s \nGoVersion: %s \nGitCommit: %s\n", integrationVersion, targetPlatformArch, runtime.Version(), gitCommit)
+		fmt.Printf("New Relic %s integration \nVersion: %s \nPlatform: %s \nGoVersion: %s \nGitCommit: %s\n", strings.Title(shortIntegrationName), integrationVersion, targetPlatformArch, runtime.Version(), gitCommit)
 		os.Exit(0)
 	}
 
