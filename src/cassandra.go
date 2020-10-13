@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 	"os"
+	"runtime"
 	"strconv"
+	"strings"
 
 	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
@@ -24,22 +27,36 @@ type argumentList struct {
 	Timeout             int    `default:"2000" help:"Timeout in milliseconds per single JMX query."`
 	ColumnFamiliesLimit int    `default:"20" help:"Limit on number of Cassandra Column Families."`
 	RemoteMonitoring    bool   `default:"false" help:"Identifies the monitored entity as 'remote'. In doubt: set to true."`
+	ShowVersion         bool   `default:"false" help:"Print build information and exit"`
 }
 
 const (
-	integrationName    = "com.newrelic.cassandra"
-	integrationVersion = "2.5.0"
-
+	integrationName  = "com.newrelic.cassandra"
 	entityRemoteType = "node"
 )
 
 var (
-	args argumentList
+	args               argumentList
+	integrationVersion = "0.0.0"
+	gitCommit          = ""
+	buildDate          = ""
 )
 
 func main() {
 	i, err := createIntegration()
 	fatalIfErr(err)
+
+	if args.ShowVersion {
+		fmt.Printf(
+			"New Relic %s integration Version: %s, Platform: %s, GoVersion: %s, GitCommit: %s, BuildDate: %s\n",
+			strings.Title(strings.Replace(integrationName, "com.newrelic.", "", 1)),
+			integrationVersion,
+			fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+			runtime.Version(),
+			gitCommit,
+			buildDate)
+		os.Exit(0)
+	}
 
 	e, err := entity(i)
 	fatalIfErr(err)
