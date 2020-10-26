@@ -1,5 +1,5 @@
 builds:
-  - id: nri-cassandra-nix
+  - id: nri-nix
     main: ./src
     binary: nri-cassandra
     gobinary: "go1.9.7"
@@ -17,7 +17,7 @@ builds:
       - goos: darwin
         goarch: 386
 
-  - id: nri-cassandra-win
+  - id: nri-win
     main: ./src
     binary: nri-cassandra
     gobinary: "go1.9.7"
@@ -32,9 +32,9 @@ builds:
       pre: build/windows/set_exe_properties.sh {{ .Env.TAG }} "cassandra"
 
 nfpms:
-  - id: nri-cassandra-deb
+  - id: nri-deb
     builds:
-      - nri-cassandra-nix
+      - nri-nix
     file_name_template: "{{ .ProjectName }}_{{ .Version }}-1_{{ .Arch }}"
     vendor: "New Relic, Inc."
     homepage: "https://www.newrelic.com/infrastructure"
@@ -55,9 +55,9 @@ nfpms:
     dependencies:
       - "newrelic-infra"
 
-  - id: nri-cassandra-rpm
+  - id: nri-rpm
     builds:
-      - nri-cassandra-nix
+      - nri-nix
     file_name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Arch }}"
     vendor: "New Relic, Inc."
     homepage: "https://www.newrelic.com/infrastructure"
@@ -83,18 +83,18 @@ nfpms:
           amd64: 1.x86_64
 
 archives:
-  - id: nri-cassandra-nix
+  - id: nri-nix
     builds:
-      - nri-cassandra-nix
+      - nri-nix
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Version }}_{{ .Arch }}_dirty"
     files:
       - cassandra-config.yml.sample
       - cassandra-definition.yml
     format: tar.gz
 
-  - id: nri-cassandra-win
+  - id: nri-win
     builds:
-      - nri-cassandra-win
+      - nri-win
     name_template: "{{ .ProjectName }}-{{ .Arch }}.{{ .Version }}_dirty"
     files:
       - cassandra-win-config.yml.sample
