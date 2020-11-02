@@ -24,6 +24,10 @@ type argumentList struct {
 	Timeout             int    `default:"2000" help:"Timeout in milliseconds per single JMX query."`
 	ColumnFamiliesLimit int    `default:"20" help:"Limit on number of Cassandra Column Families."`
 	RemoteMonitoring    bool   `default:"false" help:"Identifies the monitored entity as 'remote'. In doubt: set to true."`
+	KeyStore            string `default:"" help:"The location for the keystore containing JMX Client's SSL certificate"`
+	KeyStorePassword    string `default:"" help:"Password for the SSL Key Store"`
+	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
+	TrustStorePassword  string `default:"" help:"Password for the SSL Trust Store"`
 }
 
 const (
@@ -47,6 +51,11 @@ func main() {
 	var opts []jmx.Option
 	if args.Verbose {
 		opts = append(opts, jmx.WithVerbose())
+	}
+
+	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
+		ssl := jmx.WithSSL(args.KeyStore, args.KeyStorePassword, args.TrustStore, args.TrustStorePassword)
+		opts = append(opts, ssl)
 	}
 
 	fatalIfErr(jmx.Open(args.Hostname, strconv.Itoa(args.Port), args.Username, args.Password, opts...))
