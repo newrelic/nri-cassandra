@@ -4,13 +4,14 @@ WORKDIR /go/src/github.com/newrelic/nri-cassandra
 COPY . .
 RUN make clean compile
 
-FROM maven:3-jdk-11 as jmxbuilder
+FROM gradle:6.6.1-jdk11 as jmxbuilder
 RUN git clone https://github.com/newrelic/nrjmx.git \
     && cd nrjmx \
-    && mvn clean package -DskipTests -P \!deb,\!rpm,\!test,\!tarball
+    && gradle package
 
-FROM maven:3.6-jdk-11
+FROM gradle:6.6.1-jdk11
 COPY --from=builder /go/src/github.com/newrelic/nri-cassandra/bin /
-COPY --from=jmxbuilder /nrjmx/bin /usr/bin/
+COPY --from=jmxbuilder /home/gradle/nrjmx/bin /usr/bin/
+COPY --from=jmxbuilder /home/gradle/nrjmx/build/distributions/nrjmx-*-noarch.jar /usr/bin/nrjmx.jar
 
 CMD ["sleep", "1h"]
