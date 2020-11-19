@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 2.6.0 (TODO)
+## 2.6.0 (2020-11-19)
 ### Changed
 - Enable JMX connections with SSL/TLS.
+- Updated the configuration sample to include the hostname for inventory required
+  for entity naming.
 
 ## 2.5.0 (2020-09-07)
 ### Changed
