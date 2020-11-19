@@ -354,3 +354,54 @@ func TestCassandraIntegration_Error_InvalidConfigPath_ExistingDirectory(t *testi
 
 	assert.NotNil(t, stdout, "unexpected stdout")
 }
+
+func TestCassandraIntegration_NoError_IncompleteSSLConfig(t *testing.T) {
+	// Enabling SSL requires setting all 4 keystore/truststore options.
+	//
+	// In this test, the SSL configuration is incomplete, because
+	// TRUST_STORE_PASSWORD is not defined.
+	//
+	// nri-cassandra ignores incomplete SSL config, so it calls nrjmx
+	// without SSL options. Since the Cassandra container is not encrypting
+	// JMX connections, the call succeeds.
+
+	stdout, stderr, err := runIntegration(t,
+		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
+		"KEY_STORE=/etc/cassandra/keystore.p12",
+		"KEY_STORE_PASSWORD=keystorePassword",
+		"TRUST_STORE=/etc/cassandra/truststore.p12",
+	)
+
+	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+
+	assert.NotNil(t, stderr, "unexpected stderr")
+
+	schemaPath := filepath.Join(schemaFolder, "cassandra-schema.json")
+
+	err = jsonschema.Validate(schemaPath, stdout)
+	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+}
+
+func TestCassandraIntegration_Error_InvalidSSLConfig(t *testing.T) {
+	// Setting all 4 keystore/truststore options causes nri-cassandra to
+	// call nrjmx with SSL options.
+	//
+	// Because the nri-cassandra command fails, the test confirms that the
+	// SSL options are being passed through to nrjmx. Otherwise, the call
+	// would succeed, as it does in the NoError_IncompleteSSLConfig test.
+	//
+	// Call fails because Cassandra is not encrypting JMX connections, and
+	// because Keystore and Truststore paths don't exist.
+
+	stdout, stderr, err := runIntegration(t,
+		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
+		"KEY_STORE=/etc/cassandra/keystore.p12",
+		"KEY_STORE_PASSWORD=keystorePassword",
+		"TRUST_STORE=/etc/cassandra/truststore.p12",
+		"TRUST_STORE_PASSWORD=trustStorePassword",
+	)
+
+	assert.NotNil(t, stdout, "Unexpected stdout")
+	assert.NotNil(t, stderr, "Unexpected stderr")
+	assert.Error(t, err, "Expected error")
+}

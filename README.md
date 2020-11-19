@@ -26,6 +26,13 @@ To start the integration:
 $ ./bin/nri-cassandra --hostname <JMX hostname> --port <JMX port> --username <username> --password <password> --config_path <path to cassandra config>
 ```
 
+If JMX is configured to use TLS/SSL, add options related to keystore and truststore:
+
+```bash
+$ ./bin/nri-cassandra --hostname <JMX hostname> --port <JMX port> --username <username> --password <password> --config_path <path to cassandra config> --key_store <path to keystore> --key_store_password <keystore password> --trust_store <path to truststore> --trust_store_password <truststore password>
+
+```
+
 If you want to know more about usage of `./bin/nri-cassandra`, pass the `-help` parameter:
 
 ```bash
