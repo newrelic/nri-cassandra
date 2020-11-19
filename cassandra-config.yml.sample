@@ -33,6 +33,9 @@ instances:
           # versus remote entities:
           # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
           remote_monitoring: true
+          
+          # hostname is used to identify the monitored entity to which the inventory will be attached.
+          hostname: localhost
       labels:
           env: production
           role: cassandra
