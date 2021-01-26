@@ -17,6 +17,7 @@ instances:
           # versus remote entities:
           # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
           remote_monitoring: true
+          NR_JMX_TOOL: "C:\\PROGRA~1\\NEWREL~1\\nrjmx\\nrjmx.bat"
       labels:
           env: production
           role: cassandra
@@ -33,6 +34,7 @@ instances:
           # versus remote entities:
           # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
           remote_monitoring: true
+          NR_JMX_TOOL: "C:\\PROGRA~1\\NEWREL~1\\nrjmx\\nrjmx.bat"
       labels:
           env: production
           role: cassandra
