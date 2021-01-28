@@ -41,6 +41,8 @@ jobs:
           username: ${{ secrets.OHAI_DOCKER_HUB_ID }}
           password: ${{ secrets.OHAI_DOCKER_HUB_PASSWORD }}
       - name: Scan code for vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.COREINT_SNYK_TOKEN }}
         run: make ci/snyk-test
 
   test-nix:
