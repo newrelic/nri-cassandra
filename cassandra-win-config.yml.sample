@@ -24,6 +24,7 @@ instances:
     - name: cassandra-inventory
       command: inventory
       arguments:
+          hostname: localhost
           config_path: c:\apache-cassandra-3.11.9\conf\cassandra.yaml
 
           # New users should leave this property as `true`, to identify the
