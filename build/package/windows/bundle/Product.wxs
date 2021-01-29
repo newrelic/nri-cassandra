@@ -1,7 +1,7 @@
 ﻿<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
     <?define Version = "$(var.IntegrationVersion)" ?>
     <?define ProductId = "*" ?>
-    <?define UpgradeCode = "{e313de86-53c7-4eeb-976b-94cc8b3478a4}" ?>
+    <?define UpgradeCode = "{f806895a-c4e9-43c3-861f-28bce74ce071}" ?>
 
     <Bundle Name="New Relic Infrastructure Integration, nri-$(var.IntegrationName)"
             Version="$(var.Version)"
