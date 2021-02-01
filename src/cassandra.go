@@ -1,9 +1,13 @@
 package main
 
 import (
-	"github.com/newrelic/infra-integrations-sdk/data/attribute"
+	"fmt"
 	"os"
+	"runtime"
 	"strconv"
+	"strings"
+
+	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 
 	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
@@ -28,22 +32,36 @@ type argumentList struct {
 	KeyStorePassword    string `default:"" help:"Password for the SSL Key Store"`
 	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
 	TrustStorePassword  string `default:"" help:"Password for the SSL Trust Store"`
+	ShowVersion         bool   `default:"false" help:"Print build information and exit"`
 }
 
 const (
-	integrationName    = "com.newrelic.cassandra"
-	integrationVersion = "2.6.0"
-
+	integrationName  = "com.newrelic.cassandra"
 	entityRemoteType = "node"
 )
 
 var (
-	args argumentList
+	args               argumentList
+	integrationVersion = "0.0.0"
+	gitCommit          = ""
+	buildDate          = ""
 )
 
 func main() {
 	i, err := createIntegration()
 	fatalIfErr(err)
+
+	if args.ShowVersion {
+		fmt.Printf(
+			"New Relic %s integration Version: %s, Platform: %s, GoVersion: %s, GitCommit: %s, BuildDate: %s\n",
+			strings.Title(strings.Replace(integrationName, "com.newrelic.", "", 1)),
+			integrationVersion,
+			fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+			runtime.Version(),
+			gitCommit,
+			buildDate)
+		os.Exit(0)
+	}
 
 	e, err := entity(i)
 	fatalIfErr(err)

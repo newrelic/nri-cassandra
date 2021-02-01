@@ -6,13 +6,11 @@ TEST_DEPS        = github.com/axw/gocov/gocov github.com/AlekSi/gocov-xml
 INTEGRATIONS_DIR = /var/db/newrelic-infra/newrelic-integrations/
 CONFIG_DIR       = /etc/newrelic-infra/integrations.d
 GO_FILES        := ./src/
-WORKDIR         := $(shell pwd)
 TARGET          := target
-TARGET_DIR       = $(WORKDIR)/$(TARGET)
 
 all: build
 
-build: clean validate compile test
+build: clean validate-deps validate compile test
 
 clean:
 	@echo "=== $(INTEGRATION) === [ clean ]: removing binaries and coverage file..."
@@ -23,7 +21,12 @@ validate-deps:
 	@go get -v $(VALIDATE_DEPS)
 
 validate-only:
+ifeq ($(strip $(GO_FILES)),)
+	@echo "=== $(INTEGRATION) === [ validate ]: no Go files found. Skipping validation."
+else
 	@printf "=== $(INTEGRATION) === [ validate ]: running gofmt... "
+# `gofmt` expects files instead of packages. `go fmt` works with
+# packages, but forces -l -w flags.
 	@OUTPUT="$(shell gofmt -l $(GO_FILES))" ;\
 	if [ -z "$$OUTPUT" ]; then \
 		echo "passed." ;\
@@ -50,6 +53,7 @@ validate-only:
 		echo "$$OUTPUT" ;\
 		exit 1;\
 	fi
+endif
 
 validate: validate-deps validate-only
 
@@ -69,14 +73,14 @@ test-deps: compile-deps
 
 test-only:
 	@echo "=== $(INTEGRATION) === [ test ]: running unit tests..."
-	@gocov test $(SRC_DIR)/... | gocov-xml > coverage.xml
+	@gocov test ./... | gocov-xml > coverage.xml
 
 test: test-deps test-only
 
 integration-test: test-deps
 	@echo "=== $(INTEGRATION) === [ test ]: running integration tests..."
 	@docker-compose -f tests/integration/docker-compose.yml up -d --build
-	@go test -v -tags=integration ./tests/integration/. || (ret=$$?; docker-compose -f tests/integration/docker-compose.yml down && exit $$ret)
+	@go test -tags=integration ./tests/integration/. || (ret=$$?; docker-compose -f tests/integration/docker-compose.yml down && exit $$ret)
 	@docker-compose -f tests/integration/docker-compose.yml down
 
 install: bin/$(BINARY_NAME)
@@ -86,6 +90,7 @@ install: bin/$(BINARY_NAME)
 	@sudo install -D --mode=644 --owner=root $(ROOT)$(INTEGRATION)-config.yml.sample $(CONFIG_DIR)/$(INTEGRATION)-config.yml.sample
 
 # Include thematic Makefiles
-include Makefile-*.mk
+include $(CURDIR)/build/ci.mk
+include $(CURDIR)/build/release.mk
 
 .PHONY: all build clean validate-deps validate-only validate compile-deps compile test-deps test-only test integration-test install
