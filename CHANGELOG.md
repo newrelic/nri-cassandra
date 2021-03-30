@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.7.0 (2021-03-30)
+### Changed
+- Upgraded to Infrastructure SDK v3.6.6 which has a fix for handling warning messages from [nrjmx](https://github.com/newrelic/nrjmx).
+
 ## 2.6.0 (2020-11-19)
 ### Changed
 - Enable JMX connections with SSL/TLS.
