@@ -11,74 +11,74 @@
 		{
 			"checksumSHA1": "ZfId5ZYn7jmL0xTxooHcxrLlXoA=",
 			"path": "github.com/newrelic/infra-integrations-sdk/args",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
 			"checksumSHA1": "31zRckJsW2ysGejUOfODuQJfWlo=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/attribute",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
 			"checksumSHA1": "g3YmAYfuMWFGW3ZoAxOatE9IZPY=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/event",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
 			"checksumSHA1": "EOoxXGqFDPkCvj7wec2S5kCXY2I=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/inventory",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
-			"checksumSHA1": "0c+7FpKvJY1fop09wCVo3ZfsRAU=",
+			"checksumSHA1": "yEk3/KtU0NoN753Q+uu4hqnAQxc=",
 			"path": "github.com/newrelic/infra-integrations-sdk/data/metric",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
 			"checksumSHA1": "Ri3ma4J1Ta97oPBA8baxWgRLGqA=",
 			"path": "github.com/newrelic/infra-integrations-sdk/integration",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
-			"checksumSHA1": "qeiVVVhOZFzI3PeoQcpZlWMjnGk=",
+			"checksumSHA1": "cz8zYvdNqRuETgK89fKa9rAKgvY=",
 			"path": "github.com/newrelic/infra-integrations-sdk/jmx",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
-			"checksumSHA1": "u/P0xCzi5jNy640ldUW5yeG3d0U=",
+			"checksumSHA1": "yIohsPe5pF9QX2lzBRjDWrYA6Qw=",
 			"path": "github.com/newrelic/infra-integrations-sdk/log",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
 			"checksumSHA1": "BsHp62Etporko0d+4GpVxrP2qtw=",
 			"path": "github.com/newrelic/infra-integrations-sdk/persist",
-			"revision": "acaca3c2572c36868e7214f456af3aeeae23c652",
-			"revisionTime": "2020-04-15T14:14:31Z",
-			"version": "v3.6.3",
-			"versionExact": "v3.6.3"
+			"revision": "30ec2d62d0e9a2111101495f14572666a83b953d",
+			"revisionTime": "2021-03-30T07:26:07Z",
+			"version": "v3.6.6",
+			"versionExact": "v3.6.6"
 		},
 		{
 			"checksumSHA1": "ljd3FhYRJ91cLZz3wsH9BQQ2JbA=",
