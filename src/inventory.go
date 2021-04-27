@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/newrelic/infra-integrations-sdk/log"
 	"io/ioutil"
 	"regexp"
 
@@ -48,5 +49,8 @@ func setValue(i *inventory.Inventory, key string, field string, value interface{
 	if re.MatchString(key) || re.MatchString(field) {
 		value = "(omitted value)"
 	}
-	i.SetItem(key, field, value)
+	err := i.SetItem(key, field, value)
+	if err != nil {
+		log.Error("setting item: %v", err)
+	}
 }

@@ -1,3 +1,4 @@
+//go:generate goversioninfo
 package main
 
 import (
@@ -96,7 +97,8 @@ func main() {
 	if args.HasInventory() {
 		rawInventory, err := getInventory()
 		fatalIfErr(err)
-		populateInventory(e.Inventory, rawInventory)
+		err = populateInventory(e.Inventory, rawInventory)
+		fatalIfErr(err)
 	}
 
 	fatalIfErr(i.Publish())
