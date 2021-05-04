@@ -53,7 +53,7 @@ func TestPopulateInventory(t *testing.T) {
 	}
 
 	i := inventory.New()
-	populateInventory(i, rawInventory)
+	assert.NoError(t, populateInventory(i, rawInventory))
 
 	expectedItems := inventory.Items{
 		"key_1":                 {"value": 1},
