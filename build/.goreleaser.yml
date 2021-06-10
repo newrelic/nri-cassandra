@@ -36,10 +36,10 @@ nfpms:
     maintainer: "New Relic Infrastructure Team <infrastructure-eng@newrelic.com>"
     description: "New Relic Infrastructure cassandra Integration extend the core New Relic\nInfrastructure agent's capabilities to allow you to collect metric and\nlive state data from cassandra components."
     license: "https://newrelic.com/terms (also see LICENSE installed with this package)"
-    
+
     builds:
       - nri-nix
-    
+
     dependencies:
       - "newrelic-infra"
       - "nrjmx"
@@ -61,9 +61,9 @@ nfpms:
 
     overrides:
       rpm:
-        file_name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Arch }}"
+        file_name_template: "{{ .ProjectName }}-{{ .Version }}-1.{{ .Arch }}"
         replacements:
-          amd64: 1.x86_64
+          amd64: x86_64
 
      # Formats to be generated.
     formats:
