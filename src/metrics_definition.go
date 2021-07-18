@@ -215,6 +215,8 @@ var columnFamilyDefinition = map[string][]interface{}{
 	"db.meanRowSize":                              {"org.apache.cassandra.metrics:type=ColumnFamily,name=MeanRowSize,attr=Value", metric.GAUGE},
 	"db.maxRowSize":                               {"org.apache.cassandra.metrics:type=ColumnFamily,name=MaxRowSize,attr=Value", metric.GAUGE},
 	"db.minRowSize":                               {"org.apache.cassandra.metrics:type=ColumnFamily,name=MinRowSize,attr=Value", metric.GAUGE},
+	// Added July 18, 2021
+	"db.MaxPartitionSizeBytes": {"org.apache.cassandra.metrics:type=Table,name=MaxPartitionSize,attr=Count", metric.GAUGE},
 
 	// attributes that make a metric-set unique.
 	"db.keyspace":                {"keyspace", metric.ATTRIBUTE},
@@ -273,4 +275,6 @@ var jmxPatterns = []string{
 	"org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MeanRowSize",
 	"org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MaxRowSize",
 	"org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MinRowSize",
+	// Added July 18, 2021
+	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=MaxPartitionSize",
 }
