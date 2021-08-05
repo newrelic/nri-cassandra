@@ -1,41 +1,49 @@
-integration_name: com.newrelic.cassandra
+integrations:
+- name: nri-cassandra
+  env:
+    port: "7199"
+    hostname: localhost
 
-instances:
-    - name: cassandra-metrics
-      command: metrics
-      arguments:
-          hostname: localhost
-          port: 7199
-          username: testUser
-          password: testPassword
+    username: testUser
+    password: testPassword
 
-          # New users should leave this property as `true`, to identify the
-          # monitored entities as `remote`. Setting this property to `false` (the
-          # default value) is deprecated and will be removed soon, disallowing
-          # entities that are identified as `local`.
-          # Please check the documentation to get more information about local
-          # versus remote entities:
-          # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
-          remote_monitoring: true
-          NR_JMX_TOOL: "C:\\PROGRA~1\\NEWREL~1\\nrjmx\\nrjmx.bat"
-      labels:
-          env: production
-          role: cassandra
-    - name: cassandra-inventory
-      command: inventory
-      arguments:
-          hostname: localhost
-          config_path: c:\apache-cassandra-3.11.9\conf\cassandra.yaml
+    # New users should leave this property as `true`, to identify the
+    # monitored entities as `remote`. Setting this property to `false` (the
+    # default value) is deprecated and will be removed soon, disallowing
+    # entities that are identified as `local`.
+    # Please check the documentation to get more information about local
+    # versus remote entities:
+    # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
+    remote_monitoring: "true"
 
-          # New users should leave this property as `true`, to identify the
-          # monitored entities as `remote`. Setting this property to `false` (the
-          # default value) is deprecated and will be removed soon, disallowing
-          # entities that are identified as `local`.
-          # Please check the documentation to get more information about local
-          # versus remote entities:
-          # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
-          remote_monitoring: true
-          NR_JMX_TOOL: "C:\\PROGRA~1\\NEWREL~1\\nrjmx\\nrjmx.bat"
-      labels:
-          env: production
-          role: cassandra
+    NR_JMX_TOOL: C:\PROGRA~1\NEWREL~1\nrjmx\nrjmx.bat
+
+    metrics: "true"
+  interval: 30s
+  labels:
+    env: production
+    role: cassandra
+- name: nri-cassandra
+  env:
+
+    # hostname is used to identify the monitored entity to which the inventory will be attached.
+    hostname: localhost
+    config_path: c:\apache-cassandra-3.11.9\conf\cassandra.yaml
+
+    # New users should leave this property as `true`, to identify the
+    # monitored entities as `remote`. Setting this property to `false` (the
+    # default value) is deprecated and will be removed soon, disallowing
+    # entities that are identified as `local`.
+    # Please check the documentation to get more information about local
+    # versus remote entities:
+    # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
+    remote_monitoring: "true"
+
+    NR_JMX_TOOL: C:\PROGRA~1\NEWREL~1\nrjmx\nrjmx.bat
+
+    inventory: "true"
+  interval: 60s
+  labels:
+    env: production
+    role: cassandra
+  inventory_source: config/cassandra

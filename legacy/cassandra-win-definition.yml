@@ -1,5 +1,5 @@
 name: com.newrelic.cassandra
-description: Reports metrics and inventory for a Cassandra server
+description: Reports metrics and inventory for a Cassandra server. Legacy file kept for compatibility.
 protocol_version: 3
 os: windows
 
