@@ -18,7 +18,7 @@ integrations:
 
     METRICS: "true"
 
-    NR_JMX_TOOL: C:\PROGRA~1\NEWREL~1\nrjmx\nrjmx.bat
+    NR_JMX_TOOL: "C:\\PROGRA~1\\NEWREL~1\\nrjmx\\nrjmx.bat"
   interval: 30s
   labels:
     env: production
@@ -41,7 +41,7 @@ integrations:
 
     INVENTORY: "true"
 
-    NR_JMX_TOOL: C:\PROGRA~1\NEWREL~1\nrjmx\nrjmx.bat
+    NR_JMX_TOOL: "C:\\PROGRA~1\\NEWREL~1\\nrjmx\\nrjmx.bat"
   interval: 60s
   labels:
     env: production
