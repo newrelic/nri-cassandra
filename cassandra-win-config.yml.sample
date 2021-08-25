@@ -1,11 +1,11 @@
 integrations:
 - name: nri-cassandra
   env:
-    port: "7199"
-    hostname: localhost
+    PORT: "7199"
+    HOSTNAME: localhost
 
-    username: testUser
-    password: testPassword
+    USERNAME: testUser
+    PASSWORD: testPassword
 
     # New users should leave this property as `true`, to identify the
     # monitored entities as `remote`. Setting this property to `false` (the
@@ -14,11 +14,11 @@ integrations:
     # Please check the documentation to get more information about local
     # versus remote entities:
     # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
-    remote_monitoring: "true"
+    REMOTE_MONITORING: "true"
+
+    METRICS: "true"
 
     NR_JMX_TOOL: C:\PROGRA~1\NEWREL~1\nrjmx\nrjmx.bat
-
-    metrics: "true"
   interval: 30s
   labels:
     env: production
@@ -27,8 +27,8 @@ integrations:
   env:
 
     # hostname is used to identify the monitored entity to which the inventory will be attached.
-    hostname: localhost
-    config_path: c:\apache-cassandra-3.11.9\conf\cassandra.yaml
+    HOSTNAME: localhost
+    CONFIG_PATH: c:\apache-cassandra-3.11.9\conf\cassandra.yaml
 
     # New users should leave this property as `true`, to identify the
     # monitored entities as `remote`. Setting this property to `false` (the
@@ -37,11 +37,11 @@ integrations:
     # Please check the documentation to get more information about local
     # versus remote entities:
     # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
-    remote_monitoring: "true"
+    REMOTE_MONITORING: "true"
+
+    INVENTORY: "true"
 
     NR_JMX_TOOL: C:\PROGRA~1\NEWREL~1\nrjmx\nrjmx.bat
-
-    inventory: "true"
   interval: 60s
   labels:
     env: production
