@@ -1,41 +1,58 @@
-integration_name: com.newrelic.cassandra
+integrations:
+- name: nri-cassandra
+  env:
+    PORT: "7199"
+    HOSTNAME: localhost
 
-instances:
-    - name: cassandra-metrics
-      command: metrics
-      arguments:
-          hostname: localhost
-          port: 7199
-          username: testUser
-          password: testPassword
+    USERNAME: testUser
+    PASSWORD: testPassword
 
-          # New users should leave this property as `true`, to identify the
-          # monitored entities as `remote`. Setting this property to `false` (the
-          # default value) is deprecated and will be removed soon, disallowing
-          # entities that are identified as `local`.
-          # Please check the documentation to get more information about local
-          # versus remote entities:
-          # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
-          remote_monitoring: true
-      labels:
-          env: production
-          role: cassandra
-    - name: cassandra-inventory
-      command: inventory
-      arguments:
-          config_path: /etc/cassandra/cassandra.yaml
+    # New users should leave this property as `true`, to identify the
+    # monitored entities as `remote`. Setting this property to `false` (the
+    # default value) is deprecated and will be removed soon, disallowing
+    # entities that are identified as `local`.
+    # Please check the documentation to get more information about local
+    # versus remote entities:
+    # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
+    REMOTE_MONITORING: "true"
 
-          # New users should leave this property as `true`, to identify the
-          # monitored entities as `remote`. Setting this property to `false` (the
-          # default value) is deprecated and will be removed soon, disallowing
-          # entities that are identified as `local`.
-          # Please check the documentation to get more information about local
-          # versus remote entities:
-          # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
-          remote_monitoring: true
-          
-          # hostname is used to identify the monitored entity to which the inventory will be attached.
-          hostname: localhost
-      labels:
-          env: production
-          role: cassandra
+    # Limit on number of Cassandra Column Families.
+    # COLUMN_FAMILIES_LIMIT: 20
+    # Request for timeout in milliseconds.
+    # TIMEOUT: 2000
+    # The filepath of the keystore containing the JMX client's SSL certificate.
+    # KEY_STORE:
+    # The password for the JMX SSL key store.
+    # KEY_STORE_PASSWORD:
+    # The filepath of the trust keystore containing the JMX server's SSL certificate.
+    # TRUST_STORE:
+    # The password for the JMX trust store.
+    # TRUST_STORE_PASSWORD:
+
+    METRICS: "true"
+  interval: 30s
+  labels:
+    env: production
+    role: cassandra
+- name: nri-cassandra
+  env:
+
+    # hostname is used to identify the monitored entity to which the inventory will be attached.
+    HOSTNAME: localhost
+    CONFIG_PATH: /etc/cassandra/cassandra.yaml
+
+    # New users should leave this property as `true`, to identify the
+    # monitored entities as `remote`. Setting this property to `false` (the
+    # default value) is deprecated and will be removed soon, disallowing
+    # entities that are identified as `local`.
+    # Please check the documentation to get more information about local
+    # versus remote entities:
+    # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
+    REMOTE_MONITORING: "true"
+
+    INVENTORY: "true"
+  interval: 60s
+  labels:
+    env: production
+    role: cassandra
+  inventory_source: config/cassandra

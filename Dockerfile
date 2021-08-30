@@ -14,7 +14,6 @@ ENV NRIA_IS_FORWARD_ONLY true
 ENV NRIA_K8S_INTEGRATION true
 
 COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/bin/nri-cassandra /nri-sidecar/newrelic-infra/newrelic-integrations/bin/nri-cassandra
-COPY --from=builder-cassandra /go/src/github.com/newrelic/nri-cassandra/cassandra-definition.yml /nri-sidecar/newrelic-infra/newrelic-integrations/definition.yaml
 COPY --from=builder-jmx /nrjmx/bin /usr/bin/
 
 RUN apk update && apk add openjdk8-jre
