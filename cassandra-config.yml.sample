@@ -16,6 +16,19 @@ integrations:
     # https://github.com/newrelic/infra-integrations-sdk/blob/master/docs/entity-definition.md
     REMOTE_MONITORING: "true"
 
+    # Limit on number of Cassandra Column Families.
+    # COLUMN_FAMILIES_LIMIT: 20
+    # Request for timeout in milliseconds.
+    # TIMEOUT: 2000
+    # The filepath of the keystore containing the JMX client's SSL certificate.
+    # KEY_STORE:
+    # The password for the JMX SSL key store.
+    # KEY_STORE_PASSWORD:
+    # The filepath of the trust keystore containing the JMX server's SSL certificate.
+    # TRUST_STORE:
+    # The password for the JMX trust store.
+    # TRUST_STORE_PASSWORD:
+
     METRICS: "true"
   interval: 30s
   labels:
