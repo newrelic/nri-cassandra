@@ -11,6 +11,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GO_VERSION: '1.16'
   INTEGRATION: "cassandra"
+  NRJMX_VERSION: '2.0.0'
   ORIGINAL_REPO_NAME: ${{ github.event.repository.full_name }}
   REPO_FULL_NAME: ${{ github.event.repository.full_name }}
   TAG: ${{ github.event.release.tag_name }}

@@ -70,16 +70,19 @@ func main() {
 	fatalIfErr(err)
 
 	jmxConfig := &gojmx.JMXConfig{
-		KeyStore:           args.KeyStore,
-		KeyStorePassword:   args.KeyStorePassword,
-		TrustStore:         args.TrustStore,
-		TrustStorePassword: args.TrustStorePassword,
-		Hostname:           args.Hostname,
-		Port:               int32(args.Port),
-		Username:           args.Username,
-		Password:           args.Password,
-		RequestTimeoutMs:   int64(args.Timeout),
-		Verbose:            args.Verbose,
+		Hostname:         args.Hostname,
+		Port:             int32(args.Port),
+		Username:         args.Username,
+		Password:         args.Password,
+		RequestTimeoutMs: int64(args.Timeout),
+		Verbose:          args.Verbose,
+	}
+
+	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
+		jmxConfig.KeyStore = args.KeyStore
+		jmxConfig.KeyStorePassword = args.KeyStorePassword
+		jmxConfig.TrustStore = args.TrustStore
+		jmxConfig.TrustStorePassword = args.TrustStorePassword
 	}
 
 	jmxClient := gojmx.NewClient(context.Background())
