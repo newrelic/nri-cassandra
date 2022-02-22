@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/newrelic/nrjmx/gojmx"
 	"regexp"
+
+	"github.com/newrelic/nrjmx/gojmx"
 
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/log"
@@ -40,6 +41,10 @@ func getMetrics(client *gojmx.Client) (map[string]interface{}, map[string]map[st
 		}
 
 		for _, jmxAttr := range results {
+			if jmxAttr.ResponseType == gojmx.ResponseTypeErr {
+				log.Debug("Failed to process attribute for query: %s status: %s", jmxAttr.Name, jmxAttr.StatusMsg)
+				continue
+			}
 			matches := re.FindStringSubmatch(jmxAttr.Name)
 			key := re.ReplaceAllString(jmxAttr.Name, "")
 

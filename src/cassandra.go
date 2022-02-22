@@ -4,11 +4,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/nrjmx/gojmx"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/newrelic/nrjmx/gojmx"
 
 	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 
