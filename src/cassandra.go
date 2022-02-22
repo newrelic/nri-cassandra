@@ -2,7 +2,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/newrelic/nrjmx/gojmx"
 	"os"
 	"runtime"
 	"strconv"
@@ -13,7 +15,6 @@ import (
 	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
-	"github.com/newrelic/infra-integrations-sdk/jmx"
 	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/infra-integrations-sdk/persist"
 )
@@ -29,6 +30,7 @@ type argumentList struct {
 	Timeout             int    `default:"2000" help:"Timeout in milliseconds per single JMX query."`
 	ColumnFamiliesLimit int    `default:"20" help:"Limit on number of Cassandra Column Families."`
 	RemoteMonitoring    bool   `default:"false" help:"Identifies the monitored entity as 'remote'. In doubt: set to true."`
+	HideSecrets         bool   `default:"true" help:"Set this to false if you want to see the secrets in the verbose logs."`
 	KeyStore            string `default:"" help:"The location for the keystore containing JMX Client's SSL certificate"`
 	KeyStorePassword    string `default:"" help:"Password for the SSL Key Store"`
 	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
@@ -67,21 +69,40 @@ func main() {
 	e, err := entity(i)
 	fatalIfErr(err)
 
-	var opts []jmx.Option
-	if args.Verbose {
-		opts = append(opts, jmx.WithVerbose())
+	jmxConfig := &gojmx.JMXConfig{
+		KeyStore:           args.KeyStore,
+		KeyStorePassword:   args.KeyStorePassword,
+		TrustStore:         args.TrustStore,
+		TrustStorePassword: args.TrustStorePassword,
+		Hostname:           args.Hostname,
+		Port:               int32(args.Port),
+		Username:           args.Username,
+		Password:           args.Password,
+		RequestTimeoutMs:   int64(args.Timeout),
+		Verbose:            args.Verbose,
 	}
 
-	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
-		ssl := jmx.WithSSL(args.KeyStore, args.KeyStorePassword, args.TrustStore, args.TrustStorePassword)
-		opts = append(opts, ssl)
+	jmxClient := gojmx.NewClient(context.Background())
+	_, err = jmxClient.Open(jmxConfig)
+	log.Debug("nrjmx version: %s", jmxClient.GetClientVersion())
+
+	if err != nil {
+		log.Error("Failed to open JMX connection, error: %v, Config: (%s)",
+			err,
+			gojmx.FormatConfig(jmxConfig, args.HideSecrets),
+		)
+		os.Exit(1)
 	}
 
-	fatalIfErr(jmx.Open(args.Hostname, strconv.Itoa(args.Port), args.Username, args.Password, opts...))
-	defer jmx.Close()
+	defer func() {
+		if err := jmxClient.Close(); err != nil {
+			log.Error(
+				"Failed to close JMX connection: %s", err)
+		}
+	}()
 
 	if args.HasMetrics() {
-		rawMetrics, allColumnFamilies, err := getMetrics()
+		rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
 		fatalIfErr(err)
 		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
 		populateMetrics(ms, rawMetrics, metricsDefinition)

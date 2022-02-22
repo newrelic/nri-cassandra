@@ -8,12 +8,15 @@ services:
     restart: always
     ports:
     - "7199:7199"
-    links:
-    - nri-cassandra
 
   nri-cassandra:
+    container_name: integration_nri-cassandra_1
     build:
       context: ../../
       dockerfile: tests/integration/Dockerfile
+      args:
+        - NRJMX_VERSION=${NRJMX_VERSION}
+    dns:
+      - 8.8.8.8
     volumes:
     - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml
