@@ -31,7 +31,6 @@ type argumentList struct {
 	Timeout             int    `default:"2000" help:"Timeout in milliseconds per single JMX query."`
 	ColumnFamiliesLimit int    `default:"20" help:"Limit on number of Cassandra Column Families."`
 	RemoteMonitoring    bool   `default:"false" help:"Identifies the monitored entity as 'remote'. In doubt: set to true."`
-	HideSecrets         bool   `default:"true" help:"Set this to false if you want to see the secrets in the verbose logs."`
 	KeyStore            string `default:"" help:"The location for the keystore containing JMX Client's SSL certificate"`
 	KeyStorePassword    string `default:"" help:"Password for the SSL Key Store"`
 	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
@@ -86,14 +85,17 @@ func main() {
 		jmxConfig.TrustStorePassword = args.TrustStorePassword
 	}
 
+	hideSecrets := true
+	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
+
 	jmxClient := gojmx.NewClient(context.Background())
 	_, err = jmxClient.Open(jmxConfig)
-	log.Debug("nrjmx version: %s", jmxClient.GetClientVersion())
+	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
 
 	if err != nil {
 		log.Error("Failed to open JMX connection, error: %v, Config: (%s)",
 			err,
-			gojmx.FormatConfig(jmxConfig, args.HideSecrets),
+			formattedConfig,
 		)
 		os.Exit(1)
 	}

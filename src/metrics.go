@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/newrelic/nrjmx/gojmx"
@@ -37,7 +38,7 @@ func getMetrics(client *gojmx.Client) (map[string]interface{}, map[string]map[st
 				log.Debug("Error querying %s: %v", query, jmxErr)
 				continue
 			}
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("fatal jmx error while querying: %q: %w", query, err)
 		}
 
 		for _, jmxAttr := range results {

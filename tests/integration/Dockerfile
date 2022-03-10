@@ -1,7 +1,7 @@
 FROM golang:1.16 as builder
 
 ARG CGO_ENABLED=0
-ARG NRJMX_VERSION
+ARG NRJMX_VERSION=2.0.1
 
 WORKDIR /go/src/github.com/newrelic/nri-cassandra
 COPY . .

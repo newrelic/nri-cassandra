@@ -34,10 +34,6 @@ test:
 
 integration-test:
 	@echo "=== $(INTEGRATION) === [ test ]: running integration tests..."
-	@if [ "$(NRJMX_VERSION)" = "" ]; then \
-	    echo "Error: missing required env-var: NRJMX_VERSION\n" ;\
-        exit 1 ;\
-	fi
 	@docker-compose -f tests/integration/docker-compose.yml up -d --build
 	@go test -v -tags=integration ./tests/integration/. || (ret=$$?; docker-compose -f tests/integration/docker-compose.yml down && exit $$ret)
 	@docker-compose -f tests/integration/docker-compose.yml down
