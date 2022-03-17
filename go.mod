@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/golangci/golangci-lint v1.41.1
 	github.com/newrelic/infra-integrations-sdk v3.6.9+incompatible
+	github.com/newrelic/nrjmx/gojmx v0.0.0-20220119164809-485b71bffc97
 	github.com/stretchr/testify v1.7.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v2 v2.4.0

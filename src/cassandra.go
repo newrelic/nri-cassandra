@@ -2,18 +2,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
 
+	"github.com/newrelic/nrjmx/gojmx"
+
 	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 
 	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
-	"github.com/newrelic/infra-integrations-sdk/jmx"
 	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/infra-integrations-sdk/persist"
 )
@@ -67,21 +69,46 @@ func main() {
 	e, err := entity(i)
 	fatalIfErr(err)
 
-	var opts []jmx.Option
-	if args.Verbose {
-		opts = append(opts, jmx.WithVerbose())
+	jmxConfig := &gojmx.JMXConfig{
+		Hostname:         args.Hostname,
+		Port:             int32(args.Port),
+		Username:         args.Username,
+		Password:         args.Password,
+		RequestTimeoutMs: int64(args.Timeout),
+		Verbose:          args.Verbose,
 	}
 
 	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
-		ssl := jmx.WithSSL(args.KeyStore, args.KeyStorePassword, args.TrustStore, args.TrustStorePassword)
-		opts = append(opts, ssl)
+		jmxConfig.KeyStore = args.KeyStore
+		jmxConfig.KeyStorePassword = args.KeyStorePassword
+		jmxConfig.TrustStore = args.TrustStore
+		jmxConfig.TrustStorePassword = args.TrustStorePassword
 	}
 
-	fatalIfErr(jmx.Open(args.Hostname, strconv.Itoa(args.Port), args.Username, args.Password, opts...))
-	defer jmx.Close()
+	hideSecrets := true
+	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
+
+	jmxClient := gojmx.NewClient(context.Background())
+	_, err = jmxClient.Open(jmxConfig)
+	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
+
+	if err != nil {
+		log.Error("Failed to open JMX connection, error: %v, Config: (%s)",
+			err,
+			formattedConfig,
+		)
+		os.Exit(1)
+	}
+
+	defer func() {
+		if err := jmxClient.Close(); err != nil {
+			log.Error(
+				"Failed to close JMX connection: %s", err)
+		}
+	}()
 
 	if args.HasMetrics() {
-		rawMetrics, allColumnFamilies, err := getMetrics()
+		rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
 		fatalIfErr(err)
 		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
 		populateMetrics(ms, rawMetrics, metricsDefinition)

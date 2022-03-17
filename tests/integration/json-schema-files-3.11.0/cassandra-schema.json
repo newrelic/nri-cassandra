@@ -1140,9 +1140,6 @@
                   "db.rowCacheCapacityBytes": {
                     "type": "number"
                   },
-                  "db.rowCacheHitRate": {
-                    "type": "number"
-                  },
                   "db.rowCacheHitsPerSecond": {
                     "type": "number"
                   },
@@ -1533,7 +1530,6 @@
                   "db.liveSSTableCount",
                   "db.loadBytes",
                   "db.rowCacheCapacityBytes",
-                  "db.rowCacheHitRate",
                   "db.rowCacheHitsPerSecond",
                   "db.rowCacheRequestsPerSecond",
                   "db.rowCacheSizeBytes",

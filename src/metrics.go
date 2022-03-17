@@ -1,17 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 
+	"github.com/newrelic/nrjmx/gojmx"
+
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
-	"github.com/newrelic/infra-integrations-sdk/jmx"
 	"github.com/newrelic/infra-integrations-sdk/log"
 )
 
 // getMetrics will gather all node and keyspace level metrics and return them as two maps
 // The main metrics map will contain all the keys got from JMX and the keyspace metrics map
 // Will contain maps for each <keyspace>.<columnFamily> found while inspecting JMX metrics.
-func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, error) {
+func getMetrics(client *gojmx.Client) (map[string]interface{}, map[string]map[string]interface{}, error) {
 	internalKeyspaces := map[string]struct{}{
 		"OpsCenter":          {},
 		"system":             {},
@@ -30,20 +32,25 @@ func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, er
 	}
 
 	for _, query := range jmxPatterns {
-		results, err := jmx.Query(query, args.Timeout)
+		results, err := client.QueryMBeanAttributes(query)
 		if err != nil {
-			log.Debug("Error querying %s: %v", query, err)
-			if jmx.IsJmxClientError(err) {
-				return nil, nil, err
+			if jmxErr, ok := gojmx.IsJMXError(err); ok {
+				log.Debug("Error querying %s: %v", query, jmxErr)
+				continue
 			}
-			continue
+			return nil, nil, fmt.Errorf("fatal jmx error while querying: %q: %w", query, err)
 		}
-		for key, value := range results {
-			matches := re.FindStringSubmatch(key)
-			key = re.ReplaceAllString(key, "")
+
+		for _, jmxAttr := range results {
+			if jmxAttr.ResponseType == gojmx.ResponseTypeErr {
+				log.Debug("Failed to process attribute for query: %s status: %s", jmxAttr.Name, jmxAttr.StatusMsg)
+				continue
+			}
+			matches := re.FindStringSubmatch(jmxAttr.Name)
+			key := re.ReplaceAllString(jmxAttr.Name, "")
 
 			if len(matches) != 3 {
-				metrics[key] = value
+				metrics[key] = jmxAttr.GetValue()
 			} else {
 				columnfamily := matches[2]
 				keyspace := matches[1]
@@ -67,7 +74,7 @@ func getMetrics() (map[string]interface{}, map[string]map[string]interface{}, er
 						columnFamilyMetrics[eventkey]["columnFamily"] = columnfamily
 						columnFamilyMetrics[eventkey]["keyspaceAndColumnFamily"] = eventkey
 					}
-					columnFamilyMetrics[eventkey][key] = value
+					columnFamilyMetrics[eventkey][key] = jmxAttr.GetValue()
 				}
 
 			}
