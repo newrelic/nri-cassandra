@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.10.0 (2022-04-11)
+### Added
+* migrate to gojmx by @cristianciutea in https://github.com/newrelic/nri-cassandra/pull/82
+
 ## 2.9.1 (2021-10-20)
 ### Added
 Added support for more distributions:
