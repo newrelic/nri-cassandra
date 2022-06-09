@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.10.2 (2022-06-10)
+### Changed
+- Use Go 1.18 to compile the integration
+- Bump depencies: 
+  `github.com/newrelic/infra-integrations-sdk` to version `3.7.3+incompatible`
+  `github.com/stretchr/testify` to version `1.7.2`
+### Added
+* Cassandra Logging Template File (#87)
+
+## 2.10.1 (2022-05-24)
+### Changed
+* Updated gojmx library to v2.0.2
+
 ## 2.10.0 (2022-04-11)
 ### Added
 * migrate to gojmx by @cristianciutea in https://github.com/newrelic/nri-cassandra/pull/82
