@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible
 	github.com/newrelic/nrjmx/gojmx v0.0.0-20220524090039-95055adfdbad
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.5
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
 )
