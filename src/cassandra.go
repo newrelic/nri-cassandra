@@ -70,7 +70,7 @@ func main() {
 	fatalIfErr(err)
 
 	if args.HasMetrics() {
-		jmxClient, err := getJMXClient()
+		jmxClient, err := openJMXConnection()
 		fatalIfErr(err)
 
 		defer func() {
@@ -133,6 +133,7 @@ func createIntegration() (*integration.Integration, error) {
 	return integration.New(integrationName, integrationVersion, integration.Args(&args), integration.Storer(s), integration.Logger(l))
 }
 
+// getJMXConfig will use the integration args to prepare the JMXConfig for the JMXClient.
 func getJMXConfig() *gojmx.JMXConfig {
 	jmxConfig := &gojmx.JMXConfig{
 		Hostname:         args.Hostname,
@@ -153,7 +154,8 @@ func getJMXConfig() *gojmx.JMXConfig {
 	return jmxConfig
 }
 
-func getJMXClient() (*gojmx.Client, error) {
+// openJMXConnection configures the JMX client and attempts to connect to the endpoint.
+func openJMXConnection() (*gojmx.Client, error) {
 	jmxConfig := getJMXConfig()
 
 	hideSecrets := true
