@@ -69,45 +69,17 @@ func main() {
 	e, err := entity(i)
 	fatalIfErr(err)
 
-	jmxConfig := &gojmx.JMXConfig{
-		Hostname:         args.Hostname,
-		Port:             int32(args.Port),
-		Username:         args.Username,
-		Password:         args.Password,
-		RequestTimeoutMs: int64(args.Timeout),
-		Verbose:          args.Verbose,
-	}
-
-	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
-		jmxConfig.KeyStore = args.KeyStore
-		jmxConfig.KeyStorePassword = args.KeyStorePassword
-		jmxConfig.TrustStore = args.TrustStore
-		jmxConfig.TrustStorePassword = args.TrustStorePassword
-	}
-
-	hideSecrets := true
-	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
-
-	jmxClient := gojmx.NewClient(context.Background())
-	_, err = jmxClient.Open(jmxConfig)
-	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
-
-	if err != nil {
-		log.Error("Failed to open JMX connection, error: %v, Config: (%s)",
-			err,
-			formattedConfig,
-		)
-		os.Exit(1)
-	}
-
-	defer func() {
-		if err := jmxClient.Close(); err != nil {
-			log.Error(
-				"Failed to close JMX connection: %s", err)
-		}
-	}()
-
 	if args.HasMetrics() {
+		jmxClient, err := getJMXClient()
+		fatalIfErr(err)
+
+		defer func() {
+			if err := jmxClient.Close(); err != nil {
+				log.Error(
+					"Failed to close JMX connection: %s", err)
+			}
+		}()
+
 		rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
 		fatalIfErr(err)
 		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
@@ -159,6 +131,46 @@ func createIntegration() (*integration.Integration, error) {
 	}
 
 	return integration.New(integrationName, integrationVersion, integration.Args(&args), integration.Storer(s), integration.Logger(l))
+}
+
+func getJMXConfig() *gojmx.JMXConfig {
+	jmxConfig := &gojmx.JMXConfig{
+		Hostname:         args.Hostname,
+		Port:             int32(args.Port),
+		Username:         args.Username,
+		Password:         args.Password,
+		RequestTimeoutMs: int64(args.Timeout),
+		Verbose:          args.Verbose,
+	}
+
+	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
+		jmxConfig.KeyStore = args.KeyStore
+		jmxConfig.KeyStorePassword = args.KeyStorePassword
+		jmxConfig.TrustStore = args.TrustStore
+		jmxConfig.TrustStorePassword = args.TrustStorePassword
+	}
+
+	return jmxConfig
+}
+
+func getJMXClient() (*gojmx.Client, error) {
+	jmxConfig := getJMXConfig()
+
+	hideSecrets := true
+	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
+
+	jmxClient := gojmx.NewClient(context.Background())
+	_, err := jmxClient.Open(jmxConfig)
+
+	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to open JMX connection, error: %w, Config: (%s)",
+			err,
+			formattedConfig,
+		)
+	}
+	return jmxClient, nil
 }
 
 func entity(i *integration.Integration) (*integration.Entity, error) {
