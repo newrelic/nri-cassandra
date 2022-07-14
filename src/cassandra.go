@@ -29,7 +29,7 @@ type argumentList struct {
 	Password            string `default:"" help:"Password for the given user."`
 	ConfigPath          string `default:"/etc/cassandra/cassandra.yaml" help:"Cassandra configuration file."`
 	Timeout             int    `default:"2000" help:"Timeout in milliseconds per single JMX query."`
-	ColumnFamiliesLimit int    `default:"20" help:"Limit on number of Cassandra Column Families."`
+	ColumnFamiliesLimit int    `default:"0" help:"Limit on number of Cassandra Column Families."`
 	RemoteMonitoring    bool   `default:"false" help:"Identifies the monitored entity as 'remote'. In doubt: set to true."`
 	KeyStore            string `default:"" help:"The location for the keystore containing JMX Client's SSL certificate"`
 	KeyStorePassword    string `default:"" help:"Password for the SSL Key Store"`
@@ -80,16 +80,21 @@ func main() {
 			}
 		}()
 
-		rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
+		rawMetrics, err := getMetrics(jmxClient)
 		fatalIfErr(err)
 		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
 		populateMetrics(ms, rawMetrics, metricsDefinition)
 		populateMetrics(ms, rawMetrics, commonDefinition)
 
-		for _, columnFamilyMetrics := range allColumnFamilies {
-			s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
-			populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
-			populateMetrics(s, rawMetrics, commonDefinition)
+		if args.ColumnFamiliesLimit > 0 {
+			allColumnFamilies, err := getColumnFamilyMetrics(jmxClient)
+			fatalIfErr(err)
+
+			for _, columnFamilyMetrics := range allColumnFamilies {
+				s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
+				populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
+				populateMetrics(s, rawMetrics, commonDefinition)
+			}
 		}
 	}
 
@@ -167,7 +172,7 @@ func openJMXConnection() (*gojmx.Client, error) {
 	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open JMX connection, error: %w, Config: (%s)",
+		return nil, fmt.Errorf("failed to open JMX connection, error: %w, Config: (%s)",
 			err,
 			formattedConfig,
 		)
