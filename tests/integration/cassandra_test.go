@@ -88,6 +88,7 @@ func TestCassandraIntegration_ValidArguments(t *testing.T) {
 	stdout, stderr, err := runIntegration(t,
 		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
 		fmt.Sprintf("TIMEOUT=%v", timeout),
+		fmt.Sprintf("COLUMN_FAMILIES_LIMIT=%v", 20),
 		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
 	)
 
@@ -108,6 +109,7 @@ func TestCassandraIntegration_OnlyMetrics(t *testing.T) {
 	stdout, stderr, err := runIntegration(t,
 		"METRICS=true",
 		fmt.Sprintf("TIMEOUT=%v", timeout),
+		fmt.Sprintf("COLUMN_FAMILIES_LIMIT=%v", 20),
 		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
 	)
 
@@ -293,6 +295,7 @@ func TestCassandraIntegration_NoError_InvalidConfigPath_NonExistingFile_OnlyMetr
 		"PASSWORD=monitorPwd",
 		"METRICS=true",
 		fmt.Sprintf("TIMEOUT=%v", timeout),
+		fmt.Sprintf("COLUMN_FAMILIES_LIMIT=%v", 20),
 		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
 	)
 
@@ -371,6 +374,7 @@ func TestCassandraIntegration_NoError_IncompleteSSLConfig(t *testing.T) {
 		"KEY_STORE=/etc/cassandra/keystore.p12",
 		"KEY_STORE_PASSWORD=keystorePassword",
 		"TRUST_STORE=/etc/cassandra/truststore.p12",
+		fmt.Sprintf("COLUMN_FAMILIES_LIMIT=%v", 20),
 	)
 
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
