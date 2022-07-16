@@ -23,6 +23,7 @@ _testmain.go
 *.test
 *.prof
 *.DS_STORE
+.DS_Store
 
 bin/
 coverage.xml
