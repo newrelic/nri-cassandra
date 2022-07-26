@@ -14,6 +14,8 @@ var (
 	// columnFamilyRegex matches the keyspace name and the scope.
 	columnFamilyRegex = regexp.MustCompile("keyspace=(.*),scope=(.*?),")
 
+	percentileRegex = regexp.MustCompile("attr=.*Percentile")
+
 	// filteredKeyspace set used to match internal keyspace that should not be reported.
 	filteredKeyspace = map[string]struct{}{
 		"OpsCenter":          {},
@@ -28,17 +30,17 @@ var (
 // getMetrics will gather all node and keyspace level metrics and return them as two maps
 // The main metrics map will contain all the keys got from JMX and the keyspace metrics map
 // Will contain maps for each <keyspace>.<columnFamily> found while inspecting JMX metrics.
-func getMetrics(client *gojmx.Client) (map[string]interface{}, error) {
+func getMetrics(client *gojmx.Client, queryConfig []Query) (map[string]interface{}, error) {
 	metrics := make(map[string]interface{})
 
-	for _, query := range jmxMetricsPatterns {
-		results, err := client.QueryMBeanAttributes(query)
+	for _, query := range queryConfig {
+		results, err := client.QueryMBeanAttributes(query.MBean, query.GetAttributeNames()...)
 		if err != nil {
 			if jmxErr, ok := gojmx.IsJMXError(err); ok {
-				log.Debug("Error querying %s: %v", query, jmxErr)
+				log.Debug("Error querying %s: %v", query.MBean, jmxErr)
 				continue
 			}
-			return nil, fmt.Errorf("fatal jmx error while querying: %q: %w", query, err)
+			return nil, fmt.Errorf("fatal jmx error while querying: %q: %w", query.MBean, err)
 		}
 
 		for _, jmxAttr := range results {
@@ -57,28 +59,22 @@ func getMetrics(client *gojmx.Client) (map[string]interface{}, error) {
 // getMetrics will gather all node and keyspace level metrics and return them as two maps
 // The main metrics map will contain all the keys got from JMX and the keyspace metrics map
 // Will contain maps for each <keyspace>.<columnFamily> found while inspecting JMX metrics.
-func getColumnFamilyMetrics(client *gojmx.Client) (map[string]map[string]interface{}, error) {
+func getColumnFamilyMetrics(client *gojmx.Client, queryConfig []Query) (map[string]map[string]interface{}, error) {
 	columnFamilyMetrics := make(map[string]map[string]interface{})
 
-	mBeanNames, err := getColumnFamilyMBeanNames(client)
+	columnFamilyQueryConfig, err := getColumnFamilyQueries(client, queryConfig)
 	if err != nil {
 		return nil, fmt.Errorf("fatal jmx error while querying mBean names, error: %w", err)
 	}
 
-	for _, mBeanName := range mBeanNames {
-		attrNames, err := client.GetMBeanAttributeNames(mBeanName)
-		if err != nil {
-			log.Debug("Error getting attribute names for mBeanName %s: %v", mBeanName, err)
-			continue
-		}
-
-		results, err := client.GetMBeanAttributes(mBeanName, attrNames...)
+	for _, query := range columnFamilyQueryConfig {
+		results, err := client.GetMBeanAttributes(query.MBean, query.GetAttributeNames()...)
 		if err != nil {
 			if jmxErr, ok := gojmx.IsJMXError(err); ok {
-				log.Debug("Error getting attributes for mBeanName %s: %v", mBeanName, jmxErr)
+				log.Debug("Error getting attributes for mBeanName %s: %v", query.MBean, jmxErr)
 				continue
 			}
-			return nil, fmt.Errorf("fatal jmx error while getting attributes for mBean: %q: %w", mBeanName, err)
+			return nil, fmt.Errorf("fatal jmx error while getting attributes for mBean: %q: %w", query.MBean, err)
 		}
 
 		for _, jmxAttr := range results {
@@ -86,6 +82,7 @@ func getColumnFamilyMetrics(client *gojmx.Client) (map[string]map[string]interfa
 				log.Debug("Failed to process attribute for query: %s status: %s", jmxAttr.Name, jmxAttr.StatusMsg)
 				continue
 			}
+
 			matches := columnFamilyRegex.FindStringSubmatch(jmxAttr.Name)
 			key := columnFamilyRegex.ReplaceAllString(jmxAttr.Name, "")
 
@@ -110,18 +107,18 @@ func getColumnFamilyMetrics(client *gojmx.Client) (map[string]map[string]interfa
 // getColumnFamilyMBeanNames will fetch all the mBean names for columnFamily metrics.
 // Each MBean name will be used to query the metric values.
 // QueryMBeanNames call is cheaper, we want to apply the filtering before querying metrics values.
-func getColumnFamilyMBeanNames(client *gojmx.Client) ([]string, error) {
-	var result []string
+func getColumnFamilyQueries(client *gojmx.Client, queryConfig []Query) ([]Query, error) {
+	var result []Query
 	visitedColumnFamilies := make(map[string]struct{})
 
-	for _, pattern := range jmxColumnFamilyMetricsPatterns {
-		mBeanNames, err := client.QueryMBeanNames(pattern)
+	for _, query := range queryConfig {
+		mBeanNames, err := client.QueryMBeanNames(query.MBean)
 		if err != nil {
 			if jmxErr, ok := gojmx.IsJMXError(err); ok {
-				log.Debug("Error querying mBean name %s: %v", pattern, jmxErr)
+				log.Debug("Error querying mBean name %s: %v", query.MBean, jmxErr)
 				continue
 			}
-			return nil, fmt.Errorf("fatal jmx error while querying: %q: %w", pattern, err)
+			return nil, fmt.Errorf("fatal jmx error while querying: %q: %w", query.MBean, err)
 		}
 
 		for _, mBeanName := range mBeanNames {
@@ -146,52 +143,56 @@ func getColumnFamilyMBeanNames(client *gojmx.Client) ([]string, error) {
 				}
 			}
 
-			result = append(result, mBeanName)
+			query.MBean = mBeanName
+			result = append(result, query)
 		}
 	}
 	return result, nil
 }
 
-func populateMetrics(s *metric.Set, metrics map[string]interface{}, definition map[string][]interface{}) {
+func populateMetrics(s *metric.Set, metrics map[string]interface{}, queryConfig []Query) {
 	notFoundMetrics := make([]string, 0)
-	for metricName, metricConf := range definition {
-		rawSource := metricConf[0]
-		metricType := metricConf[1].(metric.SourceType)
 
-		var rawMetric interface{}
-		var ok bool
+	for _, query := range queryConfig {
 
-		switch source := rawSource.(type) {
-		case string:
-			rawMetric, ok = metrics[source]
-			percentileRe, err := regexp.Compile("attr=.*Percentile")
-			if err != nil {
-				continue
-			}
-			if rawMetric != nil && percentileRe.MatchString(source) {
+		for _, attr := range query.Attributes {
+			rawSource := fmt.Sprintf("%s,attr=%s", query.MBean, attr.MBeanAttribute)
+			rawSource = columnFamilyRegex.ReplaceAllString(rawSource, "")
+
+			metricType := attr.MetricType
+
+			var rawMetric interface{}
+			var ok bool
+
+			rawMetric, ok = metrics[rawSource]
+
+			if rawMetric != nil && percentileRegex.MatchString(rawSource) {
 				// Convert percentiles from microseconds to milliseconds
 				rawMetric = rawMetric.(float64) / 1000.0
 			}
-		case func(map[string]interface{}) (float64, bool):
-			rawMetric, ok = source(metrics)
-		default:
-			log.Debug("Invalid raw source metric for %s", metricName)
-			continue
-		}
 
-		if !ok {
-			notFoundMetrics = append(notFoundMetrics, metricName)
+			if !ok {
+				notFoundMetrics = append(notFoundMetrics, attr.Alias)
 
-			continue
-		}
+				continue
+			}
 
-		err := s.SetMetric(metricName, rawMetric, metricType)
-		if err != nil {
-			log.Error("setting value: %s", err)
-			continue
+			err := s.SetMetric(attr.Alias, rawMetric, metricType)
+			if err != nil {
+				log.Error("setting value: %s", err)
+				continue
+			}
 		}
 	}
 	if len(notFoundMetrics) > 0 {
 		log.Debug("Can't find raw metrics in results for keys: %v", notFoundMetrics)
+	}
+}
+
+func populateAttributes(s *metric.Set, metrics map[string]interface{}, sampleAttributes []SampleAttribute) {
+	for _, sampleAttr := range sampleAttributes {
+		if rawMetric, found := metrics[sampleAttr.Key]; found {
+			s.SetMetric(sampleAttr.Alias, rawMetric, sampleAttr.MetricType)
+		}
 	}
 }

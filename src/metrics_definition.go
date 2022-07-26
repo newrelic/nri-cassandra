@@ -2,397 +2,1064 @@ package main
 
 import (
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
+	"reflect"
 )
 
-var commonDefinition = map[string][]interface{}{
-	"software.version":   {"org.apache.cassandra.db:type=StorageService,attr=ReleaseVersion", metric.ATTRIBUTE},
-	"cluster.name":       {"org.apache.cassandra.db:type=StorageService,attr=ClusterName", metric.ATTRIBUTE},
-	"cluster.datacenter": {"org.apache.cassandra.db:type=EndpointSnitchInfo,attr=Datacenter", metric.ATTRIBUTE},
-	"cluster.rack":       {"org.apache.cassandra.db:type=EndpointSnitchInfo,attr=Rack", metric.ATTRIBUTE},
+type Definitions struct {
+	Common              []Query `yaml:"common"`
+	Metrics             []Query `yaml:"metrics"`
+	ColumnFamilyMetrics []Query `yaml:"column_family_metrics"`
 }
 
-// All metrics we want to provide for the cassandra integration
-var metricsDefinition = map[string][]interface{}{
-	"query.viewWriteRequestsPerSecond":              {"org.apache.cassandra.metrics:type=ClientRequest,scope=ViewWrite,name=Latency,attr=OneMinuteRate", metric.GAUGE},
-	"query.rangeSliceRequestsPerSecond":             {"org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Latency,attr=OneMinuteRate", metric.GAUGE},
-	"query.CASWriteRequestsPerSecond":               {"org.apache.cassandra.metrics:type=ClientRequest,scope=CASWrite,name=Latency,attr=OneMinuteRate", metric.GAUGE},
-	"query.CASReadRequestsPerSecond":                {"org.apache.cassandra.metrics:type=ClientRequest,scope=CASRead,name=Latency,attr=OneMinuteRate", metric.GAUGE},
-	"query.readRequestsPerSecond":                   {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=OneMinuteRate", metric.GAUGE},
-	"query.writeRequestsPerSecond":                  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=OneMinuteRate", metric.GAUGE},
-	"query.writeLatency98thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=98thPercentile", metric.GAUGE},
-	"query.writeLatency99thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=99thPercentile", metric.GAUGE},
-	"query.writeLatency999thPercentileMilliseconds": {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=999thPercentile", metric.GAUGE},
-	"query.writeLatency50thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=50thPercentile", metric.GAUGE},
-	"query.writeLatency75thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=75thPercentile", metric.GAUGE},
-	"query.writeLatency95thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency,attr=95thPercentile", metric.GAUGE},
-	"query.readLatency98thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=98thPercentile", metric.GAUGE},
-	"query.readLatency99thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=99thPercentile", metric.GAUGE},
-	"query.readLatency999thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=999thPercentile", metric.GAUGE},
-	"query.readLatency50thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=50thPercentile", metric.GAUGE},
-	"query.readLatency75thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=75thPercentile", metric.GAUGE},
-	"query.readLatency95thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency,attr=95thPercentile", metric.GAUGE},
+func GetDefinitions(config Config) Definitions {
+	if reflect.DeepEqual(config, Config{}) {
+		return Definitions{
+			Common:              commonDefinitions,
+			Metrics:             metricDefinitions,
+			ColumnFamilyMetrics: columnFamilyDefinitions,
+		}
+	}
 
-	"query.readTimeoutsPerSecond":           {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Timeouts,attr=OneMinuteRate", metric.GAUGE},
-	"query.readUnavailablesPerSecond":       {"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Unavailables,attr=OneMinuteRate", metric.GAUGE},
-	"query.writeTimeoutsPerSecond":          {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Timeouts,attr=OneMinuteRate", metric.RATE},
-	"query.writeUnavailablesPerSecond":      {"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Unavailables,attr=OneMinuteRate", metric.GAUGE},
-	"query.rangeSliceTimeoutsPerSecond":     {"org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Timeouts,attr=OneMinuteRate", metric.GAUGE},
-	"query.rangeSliceUnavailablesPerSecond": {"org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Unavailables,attr=OneMinuteRate", metric.GAUGE},
+	result := Definitions{
+		Common: commonDefinitions,
+	}
 
-	"db.threadpool.requestCounterMutationStageActiveTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestCounterMutationStagePendingTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestMutationStageActiveTasks":              {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestMutationStagePendingTasks":             {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestReadRepairStageActiveTasks":            {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestReadRepairStagePendingTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestReadStageActiveTasks":                  {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestReadStagePendingTasks":                 {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestRequestResponseStageActiveTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestRequestResponseStagePendingTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestViewMutationStageActiveTasks":          {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestViewMutationStagePendingTasks":         {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalAntiEntropyStageActiveTasks":          {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalAntiEntropyStagePendingTasks":         {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalCacheCleanupExecutorActiveTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalCacheCleanupExecutorPendingTasks":     {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalCompactionExecutorActiveTasks":        {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalCompactionExecutorPendingTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalGossipStageActiveTasks":               {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalGossipStagePendingTasks":              {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalHintsDispatcherActiveTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalHintsDispatcherPendingTasks":          {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalInternalResponseStageActiveTasks":     {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalInternalResponseStagePendingTasks":    {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtableFlushWriterActiveTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtableFlushWriterPendingTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtablePostFlushActiveTasks":         {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtablePostFlushPendingTasks":        {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtableReclaimMemoryActiveTasks":     {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtableReclaimMemoryPendingTasks":    {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMigrationStageActiveTasks":            {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMigrationStagePendingTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMiscStageActiveTasks":                 {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMiscStagePendingTasks":                {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalPendingRangeCalculatorActiveTasks":    {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalPendingRangeCalculatorPendingTasks":   {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalSamplerActiveTasks":                   {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalSamplerPendingTasks":                  {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalSecondaryIndexManagementActiveTasks":  {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalSecondaryIndexManagementPendingTasks": {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalValidationExecutorActiveTasks":        {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=ActiveTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalValidationExecutorPendingTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=PendingTasks,attr=Value", metric.GAUGE},
+	for _, query := range metricDefinitions {
+		attributes := query.Attributes
+		query.Attributes = []Attribute{}
 
-	"db.droppedBatchRemoveMessagesPerSecond":     {"org.apache.cassandra.metrics:type=DroppedMessage,scope=BATCH_REMOVE,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedBatchStoreMessagesPerSecond":      {"org.apache.cassandra.metrics:type=DroppedMessage,scope=BATCH_STORE,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedCounterMutationMessagesPerSecond": {"org.apache.cassandra.metrics:type=DroppedMessage,scope=COUNTER_MUTATION,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedHintMessagesPerSecond":            {"org.apache.cassandra.metrics:type=DroppedMessage,scope=HINT,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedMutationMessagesPerSecond":        {"org.apache.cassandra.metrics:type=DroppedMessage,scope=MUTATION,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedPagedRangeMessagesPerSecond":      {"org.apache.cassandra.metrics:type=DroppedMessage,scope=PAGED_RANGE,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedRangeSliceMessagesPerSecond":      {"org.apache.cassandra.metrics:type=DroppedMessage,scope=RANGE_SLICE,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedReadMessagesPerSecond":            {"org.apache.cassandra.metrics:type=DroppedMessage,scope=READ,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedReadRepairMessagesPerSecond":      {"org.apache.cassandra.metrics:type=DroppedMessage,scope=READ_REPAIR,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedRequestResponseMessagesPerSecond": {"org.apache.cassandra.metrics:type=DroppedMessage,scope=REQUEST_RESPONSE,name=Dropped,attr=Count", metric.RATE},
-	"db.droppedTraceMessagesPerSecond":           {"org.apache.cassandra.metrics:type=DroppedMessage,scope=_TRACE,name=Dropped,attr=Count", metric.RATE},
+		for _, attribute := range attributes {
+			if config.BypassFiltering(attribute) {
+				query.Attributes = append(query.Attributes, attribute)
+			}
+		}
 
-	"db.liveSSTableCount":             {"org.apache.cassandra.metrics:type=Table,name=LiveSSTableCount,attr=Value", metric.GAUGE},
-	"db.allMemtablesOnHeapSizeBytes":  {"org.apache.cassandra.metrics:type=Table,name=AllMemtablesHeapSize,attr=Value", metric.GAUGE},
-	"db.allMemtablesOffHeapSizeBytes": {"org.apache.cassandra.metrics:type=Table,name=AllMemtablesOffHeapSize,attr=Value", metric.GAUGE},
+		if len(query.Attributes) > 0 {
+			result.Metrics = append(result.Metrics, query)
+		}
+	}
 
-	"db.loadBytes":               {"org.apache.cassandra.metrics:type=Storage,name=Load,attr=Count", metric.GAUGE},
-	"db.totalHintsPerSecond":     {"org.apache.cassandra.metrics:type=Storage,name=TotalHints,attr=Count", metric.RATE},
-	"db.totalHintsInProgress":    {"org.apache.cassandra.metrics:type=Storage,name=TotalHintsInProgress,attr=Count", metric.GAUGE},
-	"db.hintsSucceededPerSecond": {"org.apache.cassandra.metrics:type=HintsService,name=HintsSucceeded,attr=OneMinuteRate", metric.GAUGE},
-	"db.hintsFailedPerSecond":    {"org.apache.cassandra.metrics:type=HintsService,name=HintsFailed,attr=OneMinuteRate", metric.GAUGE},
-	"db.hintsTimedOutPerSecond":  {"org.apache.cassandra.metrics:type=HintsService,name=HintsTimedOut,attr=OneMinuteRate", metric.GAUGE},
-	"db.hintedHandoffManager":    {"org.apache.cassandra.metrics:type=HintedHandOffManager,name=*,attr=Count", metric.GAUGE},
+	for _, query := range columnFamilyDefinitions {
+		attributes := query.Attributes
+		query.Attributes = []Attribute{}
 
-	"db.keyCacheCapacityBytes":     {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Capacity,attr=Value", metric.GAUGE},
-	"db.keyCacheHitsPerSecond":     {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Hits,attr=OneMinuteRate", metric.GAUGE},
-	"db.keyCacheHitRate":           {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=OneMinuteHitRate,attr=Value", metric.GAUGE},
-	"db.keyCacheRequestsPerSecond": {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Requests,attr=OneMinuteRate", metric.GAUGE},
-	"db.keyCacheSizeBytes":         {"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Size,attr=Value", metric.GAUGE},
-	"db.rowCacheCapacityBytes":     {"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Capacity,attr=Value", metric.GAUGE},
-	"db.rowCacheHitsPerSecond":     {"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Hits,attr=OneMinuteRate", metric.GAUGE},
-	"db.rowCacheHitRate":           {"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=OneMinuteHitRate,attr=Value", metric.GAUGE},
-	"db.rowCacheRequestsPerSecond": {"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Requests,attr=OneMinuteRate", metric.GAUGE},
-	"db.rowCacheSizeBytes":         {"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Size,attr=Value", metric.GAUGE},
+		for _, attribute := range attributes {
+			if config.BypassFiltering(attribute) {
+				query.Attributes = append(query.Attributes, attribute)
+			}
+		}
 
-	"db.commitLogCompletedTasksPerSecond": {"org.apache.cassandra.metrics:type=CommitLog,name=CompletedTasks,attr=Value", metric.RATE},
-	"db.commitLogPendindTasks":            {"org.apache.cassandra.metrics:type=CommitLog,name=PendingTasks,attr=Value", metric.GAUGE},
-	"db.commitLogTotalSizeBytes":          {"org.apache.cassandra.metrics:type=CommitLog,name=TotalCommitLogSize,attr=Value", metric.GAUGE},
-
-	// Added June 13, 2018
-	"client.connectedNativeClients": {"org.apache.cassandra.metrics:type=Client,name=connectedNativeClients,attr=Value", metric.GAUGE},
-	"storage.exceptionCount":        {"org.apache.cassandra.metrics:type=Storage,name=Exceptions,attr=Count", metric.GAUGE},
-
-	"db.threadpool.requestCounterMutationStageCompletedTasks":             {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestCounterMutationStageCurrentlyBlockedTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.requestMutationStageCompletedTasks":                    {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestMutationStageCurrentlyBlockedTasks":             {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.requestReadRepairStageCompletedTasks":                  {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestReadRepairStageCurrentlyBlockedTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.requestReadStageCompletedTasks":                        {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestReadStageCurrentlyBlockedTasks":                 {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.requestRequestResponseStageCompletedTasks":             {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestRequestResponseStageCurrentlyBlockedTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.requestViewMutationStageCompletedTasks":                {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.requestViewMutationStageCurrentlyBlockedTasks":         {"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalAntiEntropyStageCompletedTasks":                {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalAntiEntropyStageCurrentlyBlockedTasks":         {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalCacheCleanupExecutorCompletedTasks":            {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalCacheCleanupExecutorCurrentlyBlockedTasks":     {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalCompactionExecutorCompletedTasks":              {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalCompactionExecutorCurrentlyBlockedTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalGossipStageCompletedTasks":                     {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalGossipStageCurrentlyBlockedTasks":              {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalHintsDispatcherCompletedTasks":                 {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalHintsDispatcherCurrentlyBlockedTasks":          {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalInternalResponseStageCompletedTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalInternalResponseStagePCurrentlyBlockedTasks":   {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalMemtableFlushWriterCompletedTasks":             {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtableFlushWriterCurrentlyBlockedTasks":      {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalMemtablePostFlushCompletedTasks":               {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtablePostFlushCurrentlyBlockedTasks":        {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalMemtableReclaimMemoryCompletedTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMemtableReclaimMemoryCurrentlyBlockedTasks":    {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalMigrationStageCompletedTasks":                  {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMigrationStageCurrentlyBlockedTasks":           {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalMiscStageCompletedTasks":                       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalMiscStageCurrentlyBlockedTasks":                {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalPendingRangeCalculatorCompletedTasks":          {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalPendingRangeCalculatorCurrentlyBlockedTasks":   {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalSamplerCompletedTasks":                         {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalSamplerCurrentlyBlockedTasks":                  {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalSecondaryIndexManagementCompletedTasks":        {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks": {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
-	"db.threadpool.internalValidationExecutorCompletedTasks":              {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CompletedTasks,attr=Value", metric.GAUGE},
-	"db.threadpool.internalValidationExecutorCurrentlyBlockedTasks":       {"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CurrentlyBlockedTasks,attr=Count", metric.GAUGE},
+		if len(query.Attributes) > 0 {
+			result.ColumnFamilyMetrics = append(result.ColumnFamilyMetrics, query)
+		}
+	}
+	return result
 }
 
-var columnFamilyDefinition = map[string][]interface{}{
-	"db.liveSSTableCount":                           {"org.apache.cassandra.metrics:type=Table,name=LiveSSTableCount,attr=Value", metric.GAUGE},
-	"db.pendingCompactions":                         {"org.apache.cassandra.metrics:type=Table,name=PendingCompactions,attr=Value", metric.GAUGE},
-	"db.liveDiskSpaceUsedBytes":                     {"org.apache.cassandra.metrics:type=Table,name=LiveDiskSpaceUsed,attr=Count", metric.GAUGE},
-	"db.SSTablesPerRead50thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=SSTablesPerReadHistogram,attr=50thPercentile", metric.GAUGE},
-	"db.SSTablesPerRead75thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=SSTablesPerReadHistogram,attr=75thPercentile", metric.GAUGE},
-	"db.SSTablesPerRead95thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=SSTablesPerReadHistogram,attr=95thPercentile", metric.GAUGE},
-	"db.SSTablesPerRead98thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=SSTablesPerReadHistogram,attr=98thPercentile", metric.GAUGE},
-	"db.SSTablesPerRead99thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=SSTablesPerReadHistogram,attr=99thPercentile", metric.GAUGE},
-	"db.SSTablesPerRead999thPercentileMilliseconds": {"org.apache.cassandra.metrics:type=Table,name=SSTablesPerReadHistogram,attr=999thPercentile", metric.GAUGE},
-	"query.writeRequestsPerSecond":                  {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=OneMinuteRate", metric.GAUGE},
-	"query.writeLatency50thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=50thPercentile", metric.GAUGE},
-	"query.writeLatency75thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=75thPercentile", metric.GAUGE},
-	"query.writeLatency95thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=95thPercentile", metric.GAUGE},
-	"query.writeLatency98thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=98thPercentile", metric.GAUGE},
-	"query.writeLatency99thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=99thPercentile", metric.GAUGE},
-	"query.writeLatency999thPercentileMilliseconds": {"org.apache.cassandra.metrics:type=Table,name=WriteLatency,attr=999thPercentile", metric.GAUGE},
-	"query.readRequestsPerSecond":                   {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=OneMinuteRate", metric.GAUGE},
-	"query.readLatency50thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=50thPercentile", metric.GAUGE},
-	"query.readLatency75thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=75thPercentile", metric.GAUGE},
-	"query.readLatency95thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=95thPercentile", metric.GAUGE},
-	"query.readLatency98thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=98thPercentile", metric.GAUGE},
-	"query.readLatency99thPercentileMilliseconds":   {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=99thPercentile", metric.GAUGE},
-	"query.readLatency999thPercentileMilliseconds":  {"org.apache.cassandra.metrics:type=Table,name=ReadLatency,attr=999thPercentile", metric.GAUGE},
-	"db.allMemtablesOnHeapSizeBytes":                {"org.apache.cassandra.metrics:type=Table,name=AllMemtablesHeapSize,attr=Value", metric.GAUGE},
-	"db.allMemtablesOffHeapSizeBytes":               {"org.apache.cassandra.metrics:type=Table,name=AllMemtablesOffHeapSize,attr=Value", metric.GAUGE},
-
-	// Added June 13, 2018
-	"db.tombstoneScannedHistogram50thPercentile":  {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=50thPercentile", metric.GAUGE},
-	"db.tombstoneScannedHistogram75thPercentile":  {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=75thPercentile", metric.GAUGE},
-	"db.tombstoneScannedHistogram95thPercentile":  {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=95thPercentile", metric.GAUGE},
-	"db.tombstoneScannedHistogram98thPercentile":  {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=98thPercentile", metric.GAUGE},
-	"db.tombstoneScannedHistogram99thPercentile":  {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=99thPercentile", metric.GAUGE},
-	"db.tombstoneScannedHistogram999thPercentile": {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=999thPercentile", metric.GAUGE},
-	"db.tombstoneScannedHistogramCount":           {"org.apache.cassandra.metrics:type=Table,name=TombstoneScannedHistogram,attr=Count", metric.GAUGE},
-	"db.speculativeRetries":                       {"org.apache.cassandra.metrics:type=Table,name=SpeculativeRetries,attr=Count", metric.GAUGE},
-	"db.bloomFilterFalseRatio":                    {"org.apache.cassandra.metrics:type=Table,name=BloomFilterFalseRatio,attr=Value", metric.GAUGE},
-	"db.memtableLiveDataSize":                     {"org.apache.cassandra.metrics:type=Table,name=MemtableLiveDataSize,attr=Value", metric.GAUGE},
-	"db.meanRowSize":                              {"org.apache.cassandra.metrics:type=ColumnFamily,name=MeanRowSize,attr=Value", metric.GAUGE},
-	"db.maxRowSize":                               {"org.apache.cassandra.metrics:type=ColumnFamily,name=MaxRowSize,attr=Value", metric.GAUGE},
-	"db.minRowSize":                               {"org.apache.cassandra.metrics:type=ColumnFamily,name=MinRowSize,attr=Value", metric.GAUGE},
-
-	// attributes that make a metric-set unique.
-	"db.keyspace":                {"keyspace", metric.ATTRIBUTE},
-	"db.columnFamily":            {"columnFamily", metric.ATTRIBUTE},
-	"db.keyspaceAndColumnFamily": {"keyspaceAndColumnFamily", metric.ATTRIBUTE},
+type Query struct {
+	MBean      string      `yaml:"mbean"`
+	Attributes []Attribute `yaml:"attributes"`
 }
 
-// The patterns used to get all the beans needed for the metrics defined above
-var jmxMetricsPatterns = []string{
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=ViewWrite,name=Latency",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Latency",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=CASWrite,name=Latency",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=CASRead,name=Latency",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency",
-
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Timeouts",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Timeouts",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Timeouts",
-
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Unavailables",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Unavailables",
-	"org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Unavailables",
-
-	"org.apache.cassandra.metrics:type=Table,name=LiveSSTableCount",
-	"org.apache.cassandra.metrics:type=Table,name=AllMemtablesHeapSize",
-	"org.apache.cassandra.metrics:type=Table,name=AllMemtablesOffHeapSize",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=ActiveTasks",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=PendingTasks",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=ActiveTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=ActiveTasks",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=PendingTasks",
-
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=BATCH_REMOVE,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=BATCH_STORE,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=COUNTER_MUTATION,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=HINT,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=MUTATION,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=PAGED_RANGE,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=RANGE_SLICE,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=READ,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=READ_REPAIR,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=REQUEST_RESPONSE,name=Dropped",
-	"org.apache.cassandra.metrics:type=DroppedMessage,scope=_TRACE,name=Dropped",
-
-	"org.apache.cassandra.metrics:type=Storage,name=Load",
-	"org.apache.cassandra.metrics:type=Storage,name=TotalHints",
-	"org.apache.cassandra.metrics:type=Storage,name=TotalHintsInProgress",
-	"org.apache.cassandra.metrics:type=HintsService,name=HintsSucceeded",
-	"org.apache.cassandra.metrics:type=HintsService,name=HintsFailed",
-	"org.apache.cassandra.metrics:type=HintsService,name=HintsTimedout",
-	"org.apache.cassandra.metrics:type=HintedHandOffManager,name=*",
-
-	"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Capacity",
-	"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Hits",
-	"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=OneMinuteHitRate",
-	"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Requests",
-	"org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Size",
-	"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Capacity",
-	"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Hits",
-	"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=OneMinuteHitRate",
-	"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Requests",
-	"org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Size",
-
-	"org.apache.cassandra.metrics:type=CommitLog,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=CommitLog,name=PendingTasks",
-	"org.apache.cassandra.metrics:type=CommitLog,name=TotalCommitLogSize",
-
-	// Added June 13, 2018
-	"org.apache.cassandra.metrics:type=Client,name=connectedNativeClients",
-	"org.apache.cassandra.metrics:type=Table,name=SpeculativeRetries",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CompletedTasks",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CurrentlyBlockedTasks",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CompletedTasks",
-
-	"org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CompletedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CurrentlyBlockedTasks",
-	"org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CurrentlyBlockedTasks",
-
-	"org.apache.cassandra.metrics:type=Storage,name=Exceptions",
-	// Cluster and software information
-	"org.apache.cassandra.db:type=StorageService",
-	"org.apache.cassandra.db:type=EndpointSnitchInfo",
+func (q *Query) GetAttributeNames() []string {
+	var attrs []string
+	for _, attr := range q.Attributes {
+		attrs = append(attrs, attr.MBeanAttribute)
+	}
+	return attrs
 }
 
-// ColumnFamily metrics
-var jmxColumnFamilyMetricsPatterns = []string{
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=LiveSSTableCount",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=SSTablesPerReadHistogram",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=LiveDiskSpaceUsed",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=ReadLatency",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=WriteLatency",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=LiveSSTableCount",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=PendingCompactions",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=AllMemtablesHeapSize",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=AllMemtablesOffHeapSize",
+type Attribute struct {
+	MBeanAttribute string            `yaml:"mbean_attribute"`
+	Alias          string            `yaml:"alias"`
+	MetricType     metric.SourceType `yaml:"metric_type"`
+}
+
+func (a *Attribute) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var details map[string]interface{}
+	if err := unmarshal(&details); err != nil {
+		return err
+	}
+	sourceType := metric.GAUGE
+	if metricTypeField, ok := details["metric_type"]; ok {
+
+		metricTypeName, ok := metricTypeField.(string)
+		if ok {
+			metricType, found := metric.SourcesNameToType[metricTypeName]
+			if found {
+				sourceType = metricType
+			}
+		}
+	}
+	a.MetricType = sourceType
+	return nil
+}
+
+var commonDefinitions = []Query{
+	{
+		MBean: "org.apache.cassandra.db:type=StorageService",
+		Attributes: []Attribute{
+			{MBeanAttribute: "ReleaseVersion", Alias: "software.version", MetricType: metric.ATTRIBUTE},
+			{MBeanAttribute: "ClusterName", Alias: "cluster.name", MetricType: metric.ATTRIBUTE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.db:type=EndpointSnitchInfo",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Datacenter", Alias: "cluster.datacenter", MetricType: metric.ATTRIBUTE},
+			{MBeanAttribute: "Rack", Alias: "cluster.rack", MetricType: metric.ATTRIBUTE},
+		},
+	},
+}
+
+var metricDefinitions = []Query{
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,name=LiveSSTableCount",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.liveSSTableCount", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Client,name=connectedNativeClients",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "client.connectedNativeClients", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=RANGE_SLICE,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedRangeSliceMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalMemtableReclaimMemoryCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalInternalResponseStagePCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalSamplerActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestReadRepairStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Requests",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.keyCacheRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=READ_REPAIR,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedReadRepairMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtableReclaimMemoryActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalValidationExecutorCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=HintsService,name=HintsFailed",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.hintsFailedPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Storage,name=TotalHintsInProgress",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.totalHintsInProgress", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalCompactionExecutorCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalCacheCleanupExecutorCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalAntiEntropyStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalHintsDispatcherPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalCacheCleanupExecutorCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestCounterMutationStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Latency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.rangeSliceRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestReadStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=CommitLog,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.commitLogCompletedTasksPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=ViewWrite,name=Latency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.viewWriteRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalCacheCleanupExecutorPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtablePostFlushPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestViewMutationStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalInternalResponseStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestCounterMutationStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalAntiEntropyStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Requests",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.rowCacheRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtableFlushWriterPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalGossipStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.requestReadStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.requestRequestResponseStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtableFlushWriterCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalSamplerCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.requestCounterMutationStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Size",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.keyCacheSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalCompactionExecutorCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalGossipStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalSecondaryIndexManagementActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=OneMinuteHitRate",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.rowCacheHitRate", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Hits",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.keyCacheHitsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=HintsService,name=HintsSucceeded",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.hintsSucceededPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,name=AllMemtablesOffHeapSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.allMemtablesOffHeapSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=HINT,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedHintMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=COUNTER_MUTATION,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedCounterMutationMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalHintsDispatcherCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.readRequestsPerSecond", MetricType: metric.GAUGE},
+			{MBeanAttribute: "98thPercentile", Alias: "query.readLatency98thPercentileMilliseconds", MetricType: metric.GAUGE},
+
+			{MBeanAttribute: "50thPercentile", Alias: "query.readLatency50thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "999thPercentile", Alias: "query.readLatency999thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "99thPercentile", Alias: "query.readLatency99thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "75thPercentile", Alias: "query.readLatency75thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "95thPercentile", Alias: "query.readLatency95thPercentileMilliseconds", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,name=AllMemtablesHeapSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.allMemtablesOnHeapSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMiscStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalValidationExecutorCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=READ,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedReadMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Capacity",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.rowCacheCapacityBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Unavailables",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.writeUnavailablesPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalSecondaryIndexManagementPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalMemtableFlushWriterCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalAntiEntropyStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalValidationExecutorPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalHintsDispatcherActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CacheCleanupExecutor,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalCacheCleanupExecutorActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Timeouts",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.readTimeoutsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestReadStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=REQUEST_RESPONSE,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedRequestResponseMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtableReclaimMemoryPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Timeouts",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.writeTimeoutsPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalCompactionExecutorActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestMutationStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Unavailables",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.rangeSliceUnavailablesPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestMutationStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Unavailables",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.readUnavailablesPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestViewMutationStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalSecondaryIndexManagementCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalPendingRangeCalculatorPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMiscStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMiscStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtablePostFlushCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableReclaimMemory,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtableReclaimMemoryCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=BATCH_REMOVE,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedBatchRemoveMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=CASRead,name=Latency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.CASReadRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalInternalResponseStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Size",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.rowCacheSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.requestViewMutationStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=SecondaryIndexManagement,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalSamplerCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMigrationStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalPendingRangeCalculatorCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalGossipStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=ValidationExecutor,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalValidationExecutorActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.requestReadRepairStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=AntiEntropyStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalAntiEntropyStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=OneMinuteHitRate",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.keyCacheHitRate", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestReadRepairStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=CASWrite,name=Latency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.CASWriteRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestRequestResponseStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMigrationStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestRequestResponseStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalMemtablePostFlushCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=RowCache,name=Hits",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.rowCacheHitsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=PAGED_RANGE,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedPagedRangeMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=HintsService,name=HintsTimedOut",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "db.hintsTimedOutPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=CommitLog,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.commitLogPendindTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=CompactionExecutor,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalCompactionExecutorPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadRepairStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestReadRepairStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=MUTATION,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedMutationMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=CounterMutationStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestCounterMutationStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ReadStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestReadStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=ViewMutationStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestViewMutationStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Storage,name=Exceptions",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "storage.exceptionCount", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalPendingRangeCalculatorCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=HintedHandOffManager,name=*",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.hintedHandoffManager", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtableFlushWriter,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtableFlushWriterActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=RequestResponseStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestRequestResponseStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMigrationStagePendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=InternalResponseStage,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalInternalResponseStageCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=RangeSlice,name=Timeouts",
+		Attributes: []Attribute{
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.rangeSliceTimeoutsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.requestMutationStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=BATCH_STORE,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedBatchStoreMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=HintsDispatcher,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalHintsDispatcherCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=GossipStage,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalGossipStageActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Storage,name=TotalHints",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.totalHintsPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Storage,name=Load",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.loadBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ClientRequest,scope=Write,name=Latency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "999thPercentile", Alias: "query.writeLatency999thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "75thPercentile", Alias: "query.writeLatency75thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "95thPercentile", Alias: "query.writeLatency95thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "98thPercentile", Alias: "query.writeLatency98thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "50thPercentile", Alias: "query.writeLatency50thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "99thPercentile", Alias: "query.writeLatency99thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.writeRequestsPerSecond", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=Sampler,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalSamplerPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=PendingRangeCalculator,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalPendingRangeCalculatorActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=CommitLog,name=TotalCommitLogSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.commitLogTotalSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=request,scope=MutationStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.requestMutationStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=DroppedMessage,scope=_TRACE,name=Dropped",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.droppedTraceMessagesPerSecond", MetricType: metric.RATE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MemtablePostFlush,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.threadpool.internalMemtablePostFlushActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MigrationStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalMigrationStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Cache,scope=KeyCache,name=Capacity",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.keyCacheCapacityBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=internal,scope=MiscStage,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.internalMiscStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+}
+
+var columnFamilyDefinitions = []Query{
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=LiveSSTableCount",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.liveSSTableCount", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=SSTablesPerReadHistogram",
+		Attributes: []Attribute{
+			{MBeanAttribute: "75thPercentile", Alias: "db.SSTablesPerRead75thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "999thPercentile", Alias: "db.SSTablesPerRead999thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "50thPercentile", Alias: "db.SSTablesPerRead50thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "95thPercentile", Alias: "db.SSTablesPerRead95thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "98thPercentile", Alias: "db.SSTablesPerRead98thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "99thPercentile", Alias: "db.SSTablesPerRead99thPercentileMilliseconds", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=LiveDiskSpaceUsed",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.liveDiskSpaceUsedBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=ReadLatency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "999thPercentile", Alias: "query.readLatency999thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "50thPercentile", Alias: "query.readLatency50thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "95thPercentile", Alias: "query.readLatency95thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "99thPercentile", Alias: "query.readLatency99thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.readRequestsPerSecond", MetricType: metric.GAUGE},
+			{MBeanAttribute: "75thPercentile", Alias: "query.readLatency75thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "98thPercentile", Alias: "query.readLatency98thPercentileMilliseconds", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=WriteLatency",
+		Attributes: []Attribute{
+			{MBeanAttribute: "999thPercentile", Alias: "query.writeLatency999thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "98thPercentile", Alias: "query.writeLatency98thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "95thPercentile", Alias: "query.writeLatency95thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "OneMinuteRate", Alias: "query.writeRequestsPerSecond", MetricType: metric.GAUGE},
+			{MBeanAttribute: "75thPercentile", Alias: "query.writeLatency75thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "99thPercentile", Alias: "query.writeLatency99thPercentileMilliseconds", MetricType: metric.GAUGE},
+			{MBeanAttribute: "50thPercentile", Alias: "query.writeLatency50thPercentileMilliseconds", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=PendingCompactions",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.pendingCompactions", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=AllMemtablesHeapSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.allMemtablesOnHeapSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=AllMemtablesOffHeapSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.allMemtablesOffHeapSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+
 	// Added June 13, 2018
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=TombstoneScannedHistogram",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=SpeculativeRetries",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=BloomFilterFalseRatio",
-	"org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=MemtableLiveDataSize",
-	"org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MeanRowSize",
-	"org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MaxRowSize",
-	"org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MinRowSize",
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=TombstoneScannedHistogram",
+		Attributes: []Attribute{
+			{MBeanAttribute: "75thPercentile", Alias: "db.tombstoneScannedHistogram75thPercentile", MetricType: metric.GAUGE},
+			{MBeanAttribute: "Count", Alias: "db.tombstoneScannedHistogramCount", MetricType: metric.GAUGE},
+			{MBeanAttribute: "95thPercentile", Alias: "db.tombstoneScannedHistogram95thPercentile", MetricType: metric.GAUGE},
+			{MBeanAttribute: "999thPercentile", Alias: "db.tombstoneScannedHistogram999thPercentile", MetricType: metric.GAUGE},
+			{MBeanAttribute: "99thPercentile", Alias: "db.tombstoneScannedHistogram99thPercentile", MetricType: metric.GAUGE},
+			{MBeanAttribute: "50thPercentile", Alias: "db.tombstoneScannedHistogram50thPercentile", MetricType: metric.GAUGE},
+			{MBeanAttribute: "98thPercentile", Alias: "db.tombstoneScannedHistogram98thPercentile", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=SpeculativeRetries",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.speculativeRetries", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=BloomFilterFalseRatio",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.bloomFilterFalseRatio", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=MemtableLiveDataSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.memtableLiveDataSize", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MeanRowSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.meanRowSize", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MaxRowSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.maxRowSize", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ColumnFamily,keyspace=*,scope=*,name=MinRowSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.minRowSize", MetricType: metric.GAUGE},
+		},
+	},
+}
+
+// SampleAttribute are attributes that make a nr metric-set unique.
+type SampleAttribute struct {
+	Key        string
+	Alias      string
+	MetricType metric.SourceType
+}
+
+// columnFamiliesSampleAttributes are nr extra attributes to make samples unique.
+var columnFamiliesSampleAttributes = []SampleAttribute{
+	{
+		Key:        "keyspace",
+		Alias:      "db.keyspace",
+		MetricType: metric.ATTRIBUTE,
+	},
+	{
+		Key:        "columnFamily",
+		Alias:      "db.columnFamily",
+		MetricType: metric.ATTRIBUTE,
+	},
+	{
+		Key:        "keyspaceAndColumnFamily",
+		Alias:      "db.keyspaceAndColumnFamily",
+		MetricType: metric.ATTRIBUTE,
+	},
 }
