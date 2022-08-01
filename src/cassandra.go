@@ -1,19 +1,26 @@
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 //go:generate goversioninfo
 package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/newrelic/nrjmx/gojmx"
 
 	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 
-	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
+	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/newrelic/infra-integrations-sdk/log"
@@ -21,7 +28,7 @@ import (
 )
 
 type argumentList struct {
-	sdk_args.DefaultArgumentList
+	sdkArgs.DefaultArgumentList
 
 	Hostname            string `default:"localhost" help:"Hostname or IP where Cassandra is running."`
 	Port                int    `default:"7199" help:"Port on which JMX server is listening."`
@@ -36,6 +43,10 @@ type argumentList struct {
 	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
 	TrustStorePassword  string `default:"" help:"Password for the SSL Trust Store"`
 	ShowVersion         bool   `default:"false" help:"Print build information and exit"`
+	EnableInternalStats bool   `default:"false" help:"Print nrjmx internal query stats for troubleshooting"`
+	LongRunning         bool   `default:"false" help:"Specify whether this is a long running integration"`
+	HeartbeatInterval   int    `default:"5" help:"Interval in seconds vor submitting the heartbeat while in long running mode"`
+	Interval            int    `default:"30" help:"Interval in seconds for collecting data while while in long running mode"`
 }
 
 const (
@@ -48,6 +59,8 @@ var (
 	integrationVersion = "0.0.0"
 	gitCommit          = ""
 	buildDate          = ""
+
+	errNRJMXNotRunning = errors.New("nrjmx client sub-process not running")
 )
 
 func main() {
@@ -69,56 +82,28 @@ func main() {
 	e, err := entity(i)
 	fatalIfErr(err)
 
-	jmxConfig := &gojmx.JMXConfig{
-		Hostname:         args.Hostname,
-		Port:             int32(args.Port),
-		Username:         args.Username,
-		Password:         args.Password,
-		RequestTimeoutMs: int64(args.Timeout),
-		Verbose:          args.Verbose,
-	}
-
-	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
-		jmxConfig.KeyStore = args.KeyStore
-		jmxConfig.KeyStorePassword = args.KeyStorePassword
-		jmxConfig.TrustStore = args.TrustStore
-		jmxConfig.TrustStorePassword = args.TrustStorePassword
-	}
-
-	hideSecrets := true
-	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
-
-	jmxClient := gojmx.NewClient(context.Background())
-	_, err = jmxClient.Open(jmxConfig)
-	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
-
-	if err != nil {
-		log.Error("Failed to open JMX connection, error: %v, Config: (%s)",
-			err,
-			formattedConfig,
-		)
-		os.Exit(1)
-	}
-
-	defer func() {
-		if err := jmxClient.Close(); err != nil {
-			log.Error(
-				"Failed to close JMX connection: %s", err)
-		}
-	}()
-
 	if args.HasMetrics() {
-		rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
-		fatalIfErr(err)
-		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
-		populateMetrics(ms, rawMetrics, metricsDefinition)
-		populateMetrics(ms, rawMetrics, commonDefinition)
+		jmxClient, conErr := openJMXConnection()
+		fatalIfErr(conErr)
 
-		for _, columnFamilyMetrics := range allColumnFamilies {
-			s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
-			populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
-			populateMetrics(s, rawMetrics, commonDefinition)
+		defer func() {
+			if err := jmxClient.Close(); err != nil {
+				log.Error(
+					"Failed to close JMX connection: %s", err)
+			}
+		}()
+
+		config, err := LoadConfig()
+		if err != nil {
+			// Not a fatal error.
+			log.Debug(
+				"Failed to load configuration: %v", err)
 		}
+
+		definitions := GetDefinitions(config)
+
+		err = runMetricCollection(i, e, jmxClient, definitions)
+		fatalIfErr(err)
 	}
 
 	if args.HasInventory() {
@@ -161,6 +146,58 @@ func createIntegration() (*integration.Integration, error) {
 	return integration.New(integrationName, integrationVersion, integration.Args(&args), integration.Storer(s), integration.Logger(l))
 }
 
+// getJMXConfig will use the integration args to prepare the JMXConfig for the JMXClient.
+func getJMXConfig() *gojmx.JMXConfig {
+	jmxConfig := &gojmx.JMXConfig{
+		Hostname:            args.Hostname,
+		Port:                int32(args.Port),
+		Username:            args.Username,
+		Password:            args.Password,
+		RequestTimeoutMs:    int64(args.Timeout),
+		Verbose:             args.Verbose,
+		EnableInternalStats: args.EnableInternalStats,
+	}
+
+	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
+		jmxConfig.KeyStore = args.KeyStore
+		jmxConfig.KeyStorePassword = args.KeyStorePassword
+		jmxConfig.TrustStore = args.TrustStore
+		jmxConfig.TrustStorePassword = args.TrustStorePassword
+	}
+
+	return jmxConfig
+}
+
+// openJMXConnection configures the JMX client and attempts to connect to the endpoint.
+func openJMXConnection() (*gojmx.Client, error) {
+	jmxConfig := getJMXConfig()
+
+	hideSecrets := true
+	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
+
+	jmxClient := gojmx.NewClient(context.Background())
+	_, err := jmxClient.Open(jmxConfig)
+
+	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
+
+	if err != nil {
+		// When not in long-running mode, we cannot recover from any type of connection error.
+		// However, in long-running mode, we can recover later from errors related with connection, except JMXClient error
+		// which means that the nrjmx java sub-process was closed.
+		if _, ok := gojmx.IsJMXClientError(err); ok || !args.LongRunning {
+			return nil, fmt.Errorf("failed to open JMX connection, error: %w, Config: (%s)",
+				err,
+				formattedConfig,
+			)
+		}
+
+		// In long-running mode just log the error.
+		log.Error("Error while connecting to jmx connection, err: %v", err)
+	}
+
+	return jmxClient, nil
+}
+
 func entity(i *integration.Integration) (*integration.Entity, error) {
 	if args.RemoteMonitoring {
 		return i.Entity(args.Hostname, entityRemoteType)
@@ -173,4 +210,127 @@ func fatalIfErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxClient *gojmx.Client, definitions Definitions) error {
+	if !args.LongRunning {
+		return collectMetrics(e, jmxClient, definitions)
+	}
+
+	heartBeat := time.NewTicker(time.Duration(args.HeartbeatInterval) * time.Second)
+	metricInterval := time.NewTicker(time.Millisecond)
+
+	go func() {
+		for range heartBeat.C {
+			log.Debug("Sending heartBeat")
+			// heartbeat signal for long-running integrations
+			// https://docs.newrelic.com/docs/integrations/integrations-sdk/file-specifications/host-integrations-newer-configuration-format#timeout
+			fmt.Println("{}")
+		}
+	}()
+
+	// Force the first collection to happen immediately.
+	first := true
+
+	for range metricInterval.C {
+		if first {
+			metricInterval.Reset(time.Duration(args.Interval) * time.Second)
+			first = false
+		}
+
+		// Check if the nrjmx java sub-process is still alive.
+		if !jmxClient.IsRunning() {
+			return errNRJMXNotRunning
+		}
+
+		e2, err := entity(i)
+		if err != nil {
+			log.Error("Failed to create entity: %v", err)
+			continue
+		}
+
+		if err := collectMetrics(e2, jmxClient, definitions); err != nil {
+			log.Error("Failed to collect metrics, error: %v", err)
+			continue
+		}
+
+		if err := i.Publish(); err != nil {
+			log.Error("Failed to publish metrics, error: %v", err)
+			continue
+		}
+	}
+
+	return nil
+}
+
+func collectMetrics(entity *integration.Entity, jmxClient *gojmx.Client, definitions Definitions) error {
+	defer func() {
+		if !args.EnableInternalStats {
+			return
+		}
+		logInternalStats(jmxClient)
+	}()
+
+	rawMetrics, err := getMetrics(jmxClient, definitions.Metrics)
+	if err != nil {
+		return err
+	}
+
+	commonMetrics, err := getMetrics(jmxClient, definitions.Common)
+	if err != nil {
+		return err
+	}
+
+	ms := metricSet(entity, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
+	populateMetrics(ms, rawMetrics, definitions.Metrics)
+	populateMetrics(ms, commonMetrics, definitions.Common)
+
+	if args.ColumnFamiliesLimit > 0 {
+		allColumnFamilies, err := getColumnFamilyMetrics(jmxClient, definitions.ColumnFamilyMetrics)
+		if err != nil {
+			return err
+		}
+
+		for _, columnFamilyMetrics := range allColumnFamilies {
+			s := metricSet(entity, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
+			populateMetrics(s, commonMetrics, definitions.Common)
+			populateMetrics(s, columnFamilyMetrics, definitions.ColumnFamilyMetrics)
+			populateAttributes(s, columnFamilyMetrics, columnFamiliesSampleAttributes)
+		}
+	}
+	return nil
+}
+
+// logInternalStats will print in verbose logs statistics gathered by nrjmx client
+// that can be handy when troubleshooting performance issues.
+func logInternalStats(jmxClient *gojmx.Client) {
+	internalStats, err := jmxClient.GetInternalStats()
+	if err != nil {
+		log.Error("Failed to collect nrjmx internal stats, %v", err)
+		return
+	}
+
+	var totalCalls = len(internalStats)
+	var totalObjects, totalAttrs, totalSuccessful int
+
+	var totalTimeMs float64
+
+	for _, stat := range internalStats {
+		if stat.Successful {
+			totalSuccessful++
+		}
+
+		totalObjects += int(stat.ResponseCount)
+		totalTimeMs += stat.Milliseconds
+		totalAttrs += len(stat.Attrs)
+
+		log.Debug("%v", stat)
+	}
+	log.Debug("totalMs: '%.3f', totalObjects: %d, totalAttr: %d, totalCalls: %d, totalSuccessful: %d",
+		totalTimeMs,
+		totalObjects,
+		totalAttrs,
+		totalCalls,
+		totalSuccessful,
+	)
 }

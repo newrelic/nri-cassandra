@@ -1,6 +1,12 @@
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package main
 
 import (
+	"errors"
 	"github.com/newrelic/infra-integrations-sdk/log"
 	"io/ioutil"
 	"regexp"
@@ -8,6 +14,10 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/newrelic/infra-integrations-sdk/data/inventory"
+)
+
+var (
+	errNoInventoryData = errors.New("config path not correctly set, cannot fetch inventory data")
 )
 
 func getInventory() (map[string]interface{}, error) {
@@ -18,6 +28,10 @@ func getInventory() (map[string]interface{}, error) {
 
 	i := make(inventory.Item)
 	err = yaml.Unmarshal(rawYamlFile, &i)
+
+	if len(i) == 0 {
+		return nil, errNoInventoryData
+	}
 
 	return i, err
 }

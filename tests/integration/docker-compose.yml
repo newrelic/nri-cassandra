@@ -2,10 +2,13 @@ version: '3.1'
 
 services:
   cassandra:
+    container_name: integration_cassandra_1
     build:
       context: ../../
       dockerfile: tests/integration/cassandra/Dockerfile
-    restart: always
+    restart: "no"
+    environment:
+      - EXTRA_JVM_OPTS
     ports:
     - "7199:7199"
 
@@ -14,7 +17,5 @@ services:
     build:
       context: ../../
       dockerfile: tests/integration/Dockerfile
-    dns:
-      - 8.8.8.8
     volumes:
-    - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml
+     - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml

@@ -1,11 +1,16 @@
 package jsonschema
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/xeipuuv/gojsonschema"
+)
+
+var (
+	errSchemaValidate = errors.New("the output of the integration doesn't have expected JSON format")
 )
 
 // Validate validates the input argument against JSON schema. If the
@@ -24,7 +29,7 @@ func Validate(fileName string, input string) error {
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		return fmt.Errorf("Error loading JSON schema, error: %v", err)
+		return fmt.Errorf("error loading JSON schema, error: %w", err)
 	}
 
 	if result.Valid() {
@@ -35,7 +40,7 @@ func Validate(fileName string, input string) error {
 		fmt.Printf("\t- %s\n", desc)
 	}
 	fmt.Printf("\n")
-	return fmt.Errorf("The output of the integration doesn't have expected JSON format")
+	return errSchemaValidate
 }
 
 // ValidationField is a struct used in JSON schema
