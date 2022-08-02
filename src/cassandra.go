@@ -326,7 +326,7 @@ func logInternalStats(jmxClient *gojmx.Client) {
 
 		log.Debug("%v", stat)
 	}
-	log.Debug("totalMs: '%.3f', totalObjects: %d, totalAttr: %d, totalCalls: %d, totalSuccessful: %d",
+	log.Debug("TotalMs: '%.3f', TotalObjects: %d, TotalAttr: %d, TotalCalls: %d, TotalSuccessful: %d",
 		totalTimeMs,
 		totalObjects,
 		totalAttrs,
