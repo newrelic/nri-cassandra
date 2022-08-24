@@ -63,6 +63,8 @@ func getMetrics(client *gojmx.Client) (map[string]interface{}, map[string]map[st
 						if len(visitedColumnFamilies) < args.ColumnFamiliesLimit {
 							visitedColumnFamilies[eventkey] = struct{}{}
 						} else {
+							log.Warn("Skipping column family %s due to limit reached. Current limit set to %d",
+								columnfamily, args.ColumnFamiliesLimit)
 							continue
 						}
 					}
