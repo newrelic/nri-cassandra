@@ -5,17 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 2.10.3 (2022-08-25)
-### Changed
-- Bump dependencies:
-  `github.com/stretchr/testify` to version `1.8.0`
-### Added
-* Improved logging when hitting the column families limit (#96)
-
 ## 2.10.2 (2022-06-10)
 ### Changed
 - Use Go 1.18 to compile the integration
-- Bump dependencies:
+- Bump dependencies: 
   `github.com/newrelic/infra-integrations-sdk` to version `3.7.3+incompatible`
   `github.com/stretchr/testify` to version `1.7.2`
 ### Added
