@@ -3,11 +3,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/newrelic/nrjmx/gojmx"
 
@@ -36,6 +38,9 @@ type argumentList struct {
 	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
 	TrustStorePassword  string `default:"" help:"Password for the SSL Trust Store"`
 	ShowVersion         bool   `default:"false" help:"Print build information and exit"`
+	LongRunning         bool   `default:"false" help:"In long-running mode integration process will be kept alive"`
+	HeartbeatInterval   int    `default:"5" help:"Interval in seconds for submitting the heartbeat while in long-running mode"`
+	Interval            int    `default:"30" help:"Interval in seconds for collecting data while while in long-running mode"`
 }
 
 const (
@@ -48,6 +53,8 @@ var (
 	integrationVersion = "0.0.0"
 	gitCommit          = ""
 	buildDate          = ""
+
+	errNRJMXNotRunning = errors.New("nrjmx client sub-process not running")
 )
 
 func main() {
@@ -108,17 +115,8 @@ func main() {
 	}()
 
 	if args.HasMetrics() {
-		rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
+		err = runMetricCollection(i, e, jmxClient)
 		fatalIfErr(err)
-		ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
-		populateMetrics(ms, rawMetrics, metricsDefinition)
-		populateMetrics(ms, rawMetrics, commonDefinition)
-
-		for _, columnFamilyMetrics := range allColumnFamilies {
-			s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
-			populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
-			populateMetrics(s, rawMetrics, commonDefinition)
-		}
 	}
 
 	if args.HasInventory() {
@@ -129,6 +127,69 @@ func main() {
 	}
 
 	fatalIfErr(i.Publish())
+}
+
+func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxClient *gojmx.Client) error {
+	if !args.LongRunning {
+		collectMetrics(e, jmxClient)
+		return nil
+	}
+
+	heartBeat := time.NewTicker(time.Duration(args.HeartbeatInterval) * time.Second)
+	metricInterval := time.NewTicker(time.Millisecond)
+
+	go func() {
+		for range heartBeat.C {
+			log.Debug("Sending heartBeat")
+			// heartbeat signal for long-running integrations
+			// https://docs.newrelic.com/docs/integrations/integrations-sdk/file-specifications/host-integrations-newer-configuration-format#timeout
+			fmt.Println("{}")
+		}
+	}()
+
+	// Force the first collection to happen immediately.
+	first := true
+
+	for range metricInterval.C {
+		if first {
+			metricInterval.Reset(time.Duration(args.Interval) * time.Second)
+			first = false
+		}
+
+		// Check if the nrjmx java sub-process is still alive.
+		if !jmxClient.IsRunning() {
+			return errNRJMXNotRunning
+		}
+
+		e2, err := entity(i)
+		if err != nil {
+			log.Error("Failed to create entity: %v", err)
+			continue
+		}
+
+		collectMetrics(e2, jmxClient)
+
+		if err := i.Publish(); err != nil {
+			log.Error("Failed to publish metrics, error: %v", err)
+			continue
+		}
+	}
+
+	return nil
+}
+
+func collectMetrics(entity *integration.Entity, jmxClient *gojmx.Client) {
+	rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
+	fatalIfErr(err)
+	ms := metricSet(entity, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
+	populateMetrics(ms, rawMetrics, metricsDefinition)
+	populateMetrics(ms, rawMetrics, commonDefinition)
+
+	for _, columnFamilyMetrics := range allColumnFamilies {
+		s := metricSet(entity, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
+		populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
+		populateMetrics(s, rawMetrics, commonDefinition)
+	}
 }
 
 func metricSet(e *integration.Entity, eventType, hostname string, port int, remoteMonitoring bool) *metric.Set {

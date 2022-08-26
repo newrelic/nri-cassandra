@@ -1,14 +1,11 @@
-//go:build integration
-// +build integration
-
 package integration
 
 import (
 	"flag"
 	"fmt"
 	"github.com/newrelic/infra-integrations-sdk/log"
-	"github.com/newrelic/nri-cassandra/tests/integration/helpers"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
+	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -62,7 +59,7 @@ func runIntegration(t *testing.T, envVars ...string) (string, string, error) {
 		command = append(command, "--hostname", *hostname)
 	}
 
-	stdout, stderr, err := helpers.ExecInContainer(*container, command, envVars...)
+	stdout, stderr, err := testutils.ExecInContainer(*container, command, envVars...)
 
 	if stderr != "" {
 		log.Debug("Integration command Standard Error: ", stderr)
@@ -83,7 +80,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCassandraIntegration_ValidArguments(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
@@ -103,7 +100,7 @@ func TestCassandraIntegration_ValidArguments(t *testing.T) {
 }
 
 func TestCassandraIntegration_OnlyMetrics(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"METRICS=true",
@@ -122,7 +119,7 @@ func TestCassandraIntegration_OnlyMetrics(t *testing.T) {
 }
 
 func TestCassandraIntegration_OnlyInventory(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 	stdout, stderr, err := runIntegration(t,
 		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
 		"INVENTORY=true",
@@ -141,7 +138,7 @@ func TestCassandraIntegration_OnlyInventory(t *testing.T) {
 
 func TestCassandraIntegration_Error_NoUserCredentials(t *testing.T) {
 	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
@@ -157,7 +154,7 @@ func TestCassandraIntegration_Error_NoUserCredentials(t *testing.T) {
 }
 
 func TestCassandraIntegration_NoError_NoUserCredentials_OnlyInventory(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"INVENTORY=true",
@@ -177,7 +174,7 @@ func TestCassandraIntegration_NoError_NoUserCredentials_OnlyInventory(t *testing
 
 func TestCassandraIntegration_Error_NoPassword(t *testing.T) {
 	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"USERNAME=monitorRole",
@@ -194,7 +191,7 @@ func TestCassandraIntegration_Error_NoPassword(t *testing.T) {
 
 func TestCassandraIntegration_Error_InvalidPassword(t *testing.T) {
 	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"USERNAME=monitorRole",
@@ -213,7 +210,7 @@ func TestCassandraIntegration_Error_InvalidPassword(t *testing.T) {
 
 func TestCassandraIntegration_Error_InvalidUsername(t *testing.T) {
 	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"USERNAME=invalid_username",
@@ -232,7 +229,7 @@ func TestCassandraIntegration_Error_InvalidUsername(t *testing.T) {
 
 func TestCassandraIntegration_Error_InvalidHostname(t *testing.T) {
 	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 	stdout, stderr, err := runIntegration(t,
 		"HOSTNAME=nonExistingHost",
 		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
@@ -249,7 +246,7 @@ func TestCassandraIntegration_Error_InvalidHostname(t *testing.T) {
 
 func TestCassandraIntegration_Error_InvalidPort(t *testing.T) {
 	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 	stdout, stderr, err := runIntegration(t,
 		"USERNAME=monitorRole",
 		"PASSWORD=monitorPwd",
@@ -267,7 +264,7 @@ func TestCassandraIntegration_Error_InvalidPort(t *testing.T) {
 }
 
 func TestCassandraIntegration_Error_InvalidConfigPath_NonExistingFile(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"CONFIG_PATH=/nonExisting.yaml",
@@ -285,7 +282,7 @@ func TestCassandraIntegration_Error_InvalidConfigPath_NonExistingFile(t *testing
 }
 
 func TestCassandraIntegration_NoError_InvalidConfigPath_NonExistingFile_OnlyMetrics(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		"CONFIG_PATH=/nonExisting.yaml",
@@ -318,7 +315,7 @@ func TestCassandraIntegration_Error_InvalidConfigPath_ExistingFile(t *testing.T)
 	}
 	defer os.Remove(tmpfile.Name())
 
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 	stdout, stderr, err := runIntegration(t,
 		fmt.Sprintf("CONFIG_PATH=%s", tmpfile.Name()),
 		"INVENTORY=true",
@@ -339,7 +336,7 @@ func TestCassandraIntegration_Error_InvalidConfigPath_ExistingFile(t *testing.T)
 }
 
 func TestCassandraIntegration_Error_InvalidConfigPath_ExistingDirectory(t *testing.T) {
-	testName := helpers.GetTestName(t)
+	testName := testutils.GetTestName(t)
 
 	stdout, stderr, err := runIntegration(t,
 		fmt.Sprintf("CONFIG_PATH=%s", "/etc/cassandra/"),
