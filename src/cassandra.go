@@ -15,7 +15,7 @@ import (
 
 	"github.com/newrelic/infra-integrations-sdk/data/attribute"
 
-	sdk_args "github.com/newrelic/infra-integrations-sdk/args"
+	sdkArgs "github.com/newrelic/infra-integrations-sdk/args"
 	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/newrelic/infra-integrations-sdk/integration"
 	"github.com/newrelic/infra-integrations-sdk/log"
@@ -23,7 +23,7 @@ import (
 )
 
 type argumentList struct {
-	sdk_args.DefaultArgumentList
+	sdkArgs.DefaultArgumentList
 
 	Hostname            string `default:"localhost" help:"Hostname or IP where Cassandra is running."`
 	Port                int    `default:"7199" help:"Port on which JMX server is listening."`
@@ -76,46 +76,17 @@ func main() {
 	e, err := entity(i)
 	fatalIfErr(err)
 
-	jmxConfig := &gojmx.JMXConfig{
-		Hostname:         args.Hostname,
-		Port:             int32(args.Port),
-		Username:         args.Username,
-		Password:         args.Password,
-		RequestTimeoutMs: int64(args.Timeout),
-		Verbose:          args.Verbose,
-	}
-
-	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
-		jmxConfig.KeyStore = args.KeyStore
-		jmxConfig.KeyStorePassword = args.KeyStorePassword
-		jmxConfig.TrustStore = args.TrustStore
-		jmxConfig.TrustStorePassword = args.TrustStorePassword
-	}
-
-	hideSecrets := true
-	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
-
-	jmxClient := gojmx.NewClient(context.Background())
-	_, err = jmxClient.Open(jmxConfig)
-	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
-
-	if err != nil {
-		log.Error("Failed to open JMX connection, error: %v, Config: (%s)",
-			err,
-			formattedConfig,
-		)
-		os.Exit(1)
-	}
-
-	defer func() {
-		if err := jmxClient.Close(); err != nil {
-			log.Error(
-				"Failed to close JMX connection: %s", err)
-		}
-	}()
-
 	if args.HasMetrics() {
-		err = runMetricCollection(i, e, jmxClient)
+		jmxClient, conErr := openJMXConnection()
+		fatalIfErr(conErr)
+
+		defer func() {
+			if err := jmxClient.Close(); err != nil {
+				log.Error(
+					"Failed to close JMX connection: %s", err)
+			}
+		}()
+
 		fatalIfErr(err)
 	}
 
@@ -220,6 +191,42 @@ func createIntegration() (*integration.Integration, error) {
 	}
 
 	return integration.New(integrationName, integrationVersion, integration.Args(&args), integration.Storer(s), integration.Logger(l))
+}
+
+// getJMXConfig will use the integration args to prepare the JMXConfig for the JMXClient.
+func getJMXConfig() *gojmx.JMXConfig {
+	jmxConfig := &gojmx.JMXConfig{
+		Hostname:         args.Hostname,
+		Port:             int32(args.Port),
+		Username:         args.Username,
+		Password:         args.Password,
+		RequestTimeoutMs: int64(args.Timeout),
+		Verbose:          args.Verbose,
+	}
+
+	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
+		jmxConfig.KeyStore = args.KeyStore
+		jmxConfig.KeyStorePassword = args.KeyStorePassword
+		jmxConfig.TrustStore = args.TrustStore
+		jmxConfig.TrustStorePassword = args.TrustStorePassword
+	}
+
+	return jmxConfig
+}
+
+// openJMXConnection configures the JMX client and attempts to connect to the endpoint.
+func openJMXConnection() (*gojmx.Client, error) {
+	jmxConfig := getJMXConfig()
+
+	hideSecrets := true
+	formattedConfig := gojmx.FormatConfig(jmxConfig, hideSecrets)
+
+	jmxClient := gojmx.NewClient(context.Background())
+	_, err := jmxClient.Open(jmxConfig)
+
+	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
+
+	return jmxClient, err
 }
 
 func entity(i *integration.Integration) (*integration.Entity, error) {

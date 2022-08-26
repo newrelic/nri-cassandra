@@ -17,4 +17,6 @@ COPY --from=builder /go/src/github.com/newrelic/nri-cassandra/bin /
 COPY --from=builder /usr/bin/nrjmx /usr/bin/nrjmx
 COPY --from=builder /usr/lib/nrjmx/nrjmx.jar /usr/lib/nrjmx/nrjmx.jar
 
+COPY ./tests/integration/cassandra/certs /certs
+
 CMD ["sleep", "1h"]
