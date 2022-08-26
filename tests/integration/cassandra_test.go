@@ -1,3 +1,4 @@
+///go:build integration
 //go:build integration
 // +build integration
 
@@ -11,7 +12,6 @@ package integration
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
@@ -57,7 +57,7 @@ func (s *CassandraTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 
 	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
-	log.Info("Wait for cassandra to initialize...")
+	s.T().Log("Wait for cassandra to initialize...")
 	time.Sleep(30 * time.Second)
 }
 
@@ -80,7 +80,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_ValidArguments() {
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 	assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
@@ -107,7 +107,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_OnlyMetrics() {
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 	assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
@@ -134,7 +134,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_OnlyInventory() {
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 	assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
@@ -162,7 +162,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Error_InvalidHostname() {
 
 	expectedErrorMessage := "Unknown host"
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err, "Expected error")
 
 	assert.Empty(t, stdout)
@@ -186,7 +186,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Error_InvalidPort() {
 
 	expectedErrorMessage := "Connection refused"
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err, "Expected error")
 
 	assert.Empty(t, stdout, "Unexpected stdout content")
@@ -209,7 +209,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Error_InvalidConfigPath_No
 
 	expectedErrorMessage := "no such file or directory"
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err, "Expected error")
 
 	assert.Empty(t, stdout, "Unexpected stdout content")
@@ -232,7 +232,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_NoError_InvalidConfigPath_
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 	assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
@@ -254,7 +254,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Error_InvalidConfigPath_Ex
 	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFn()
 
-	_, _, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{"touch", path}, nil)
+	_, _, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{"touch", path}, nil)
 	assert.NoError(t, err)
 
 	env := map[string]string{
@@ -263,7 +263,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Error_InvalidConfigPath_Ex
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err)
 
 	assert.Empty(t, stdout, "Unexpected stdout output")
@@ -286,7 +286,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Error_InvalidConfigPath_Ex
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err)
 
 	assert.Empty(t, stdout, "Unexpected stdout output")

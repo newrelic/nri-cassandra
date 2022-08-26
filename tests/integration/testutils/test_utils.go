@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
@@ -61,10 +60,10 @@ func init() {
 }
 
 // RunDockerExecCommand executes the given command inside the specified container.
-func RunDockerExecCommand(ctx context.Context, containerName string, args []string, envVars map[string]string) (stdout string, stderr string, err error) {
-	cmd := NewDockerExecCommand(ctx, containerName, args, envVars)
+func RunDockerExecCommand(ctx context.Context, t *testing.T, containerName string, args []string, envVars map[string]string) (stdout string, stderr string, err error) {
+	cmd := NewDockerExecCommand(ctx, t, containerName, args, envVars)
 
-	log.Debug("executing: docker %v", cmd)
+	t.Logf("executing: docker %v", cmd)
 
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
@@ -78,7 +77,7 @@ func RunDockerExecCommand(ctx context.Context, containerName string, args []stri
 }
 
 // NewDockerExecCommand returns a configured un-started exec.Cmd for a docker exec command.
-func NewDockerExecCommand(ctx context.Context, containerName string, args []string, envVars map[string]string) *exec.Cmd {
+func NewDockerExecCommand(ctx context.Context, t *testing.T, containerName string, args []string, envVars map[string]string) *exec.Cmd {
 	cmdLine := []string{
 		"exec",
 		"-i",
@@ -91,7 +90,7 @@ func NewDockerExecCommand(ctx context.Context, containerName string, args []stri
 	cmdLine = append(cmdLine, containerName)
 	cmdLine = append(cmdLine, args...)
 
-	log.Info("executing: docker %s", strings.Join(cmdLine, " "))
+	t.Logf("executing: docker %s", strings.Join(cmdLine, " "))
 
 	return exec.CommandContext(ctx, "docker", cmdLine...)
 }
@@ -112,14 +111,14 @@ func NewOutput() *Output {
 }
 
 // Flush will empty the Output channels and returns the content.
-func (o *Output) Flush() (stdout []string, stderr []string) {
+func (o *Output) Flush(t *testing.T) (stdout []string, stderr []string) {
 	for {
 		select {
 		case line := <-o.StdoutCh:
-			log.Info("Flushing stdout line: %s", line)
+			t.Logf("Flushing stdout line: %s", line)
 			stdout = append(stdout, line)
 		case line := <-o.StderrCh:
-			log.Info("Flushing stderr line: %s", line)
+			t.Logf("Flushing stderr line: %s", line)
 			stderr = append(stderr, line)
 		default:
 			return
@@ -128,7 +127,7 @@ func (o *Output) Flush() (stdout []string, stderr []string) {
 }
 
 // StartLongRunningProcess will execute a command and will pipe the stdout & stderr into and Output object.
-func StartLongRunningProcess(ctx context.Context, cmd *exec.Cmd) (*Output, error) {
+func StartLongRunningProcess(ctx context.Context, t *testing.T, cmd *exec.Cmd) (*Output, error) {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
@@ -146,11 +145,11 @@ func StartLongRunningProcess(ctx context.Context, cmd *exec.Cmd) (*Output, error
 		}
 
 		if err := scanner.Err(); ctx.Err() == nil && err != nil {
-			log.Error("Error while reading the pipe, %v", err)
+			t.Logf("Error while reading the pipe, %v", err)
 			return
 		}
 
-		log.Info("Finished reading the pipe")
+		t.Log("Finished reading the pipe")
 	}
 
 	output := NewOutput()
@@ -167,8 +166,8 @@ func StartLongRunningProcess(ctx context.Context, cmd *exec.Cmd) (*Output, error
 }
 
 // RunDockerCommandForContainer will execute a docker command for the specified containerName.
-func RunDockerCommandForContainer(command, containerName string) error {
-	log.Info("running docker %s container %s", command, containerName)
+func RunDockerCommandForContainer(t *testing.T, command, containerName string) error {
+	t.Logf("running docker %s container %s", command, containerName)
 
 	cmd := exec.Command("docker", command, containerName)
 
@@ -237,9 +236,7 @@ func ConfigureSSLCassandraDockerCompose() *testcontainers.LocalDockerCompose {
 
 // AssertReceivedErrors check if at least one the log lines provided contains the given message.
 func AssertReceivedErrors(t *testing.T, msg string, errLog ...string) {
-	if len(errLog) == 0 {
-		return
-	}
+	assert.GreaterOrEqual(t, len(errLog), 1)
 
 	for _, line := range errLog {
 		if strings.Contains(line, msg) {
@@ -268,10 +265,10 @@ func AssertReceivedPayloadsMatchSchema(t *testing.T, ctx context.Context, output
 		select {
 		case stdoutLine := <-output.StdoutCh:
 			if stdoutLine == "{}" {
-				log.Info("Received heartbeat")
+				t.Log("Received heartbeat")
 				validHeartbeats++
 			} else {
-				log.Info("Received payload: %s", stdoutLine)
+				t.Logf("Received payload: %s", stdoutLine)
 
 				err := jsonschema.Validate(schemaPath, stdoutLine)
 				if err == nil {
@@ -281,7 +278,7 @@ func AssertReceivedPayloadsMatchSchema(t *testing.T, ctx context.Context, output
 			}
 
 		case stderrLine := <-output.StderrCh:
-			log.Info("Received stderr: %s", stderrLine)
+			t.Logf("Received stderr: %s", stderrLine)
 
 			assert.Empty(t, FilterStderr(stderrLine))
 		case <-ctx.Done():
@@ -292,32 +289,32 @@ func AssertReceivedPayloadsMatchSchema(t *testing.T, ctx context.Context, output
 
 // FilterStderr is handy to filter some log lines that are expected.
 func FilterStderr(content string) string {
+	return FilterLines(content, ExpectedErrMessagesFilter)
+}
+
+func FilterLines(content string, filter func(line string) bool) string {
 	if content == "" {
 		return content
 	}
+	var result []string
+	for _, line := range strings.Split(content, "\n") {
+		if !filter(line) {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n")
+}
 
-	ignoredMessages := []string{
+func ExpectedErrMessagesFilter(line string) bool {
+	wordsToIgnoreLines := []string{
 		"[INFO]",
 		"[DEBUG]",
 		"non-numeric value for gauge metric",
 	}
-
-	var result []string
-
-	isIgnored := func(line string) bool {
-		for _, ignored := range ignoredMessages {
-			if strings.Contains(line, ignored) {
-				return true
-			}
-		}
-		return false
-	}
-
-	for _, line := range strings.Split(content, "\n") {
-		if !isIgnored(line) {
-			result = append(result, line)
+	for _, chunk := range wordsToIgnoreLines {
+		if strings.Contains(line, chunk) {
+			return true
 		}
 	}
-
-	return strings.Join(result, "\n")
+	return false
 }

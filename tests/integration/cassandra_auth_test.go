@@ -11,7 +11,6 @@ package integration
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +43,7 @@ func (s *CassandraSSLTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 
 	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
-	log.Info("Wait for cassandra to initialize...")
+	s.T().Log("Wait for cassandra to initialize...")
 	time.Sleep(30 * time.Second)
 }
 
@@ -76,7 +75,7 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 	assert.Empty(t, testutils.FilterStderr(stderr))
@@ -111,7 +110,7 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongPassword() {
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err)
 	assert.Empty(t, stdout)
 
@@ -142,7 +141,7 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongKeyStorePassword()
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.Error(t, err)
 	assert.Empty(t, stdout)
 
