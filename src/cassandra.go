@@ -143,18 +143,32 @@ func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client) error {
 		return fmt.Errorf("failed to create entity: %w", err)
 	}
 
-	rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
+	rawMetrics, err := getMetrics(jmxClient, metricDefinitions)
 	if err != nil {
 		return err
 	}
-	ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
-	populateMetrics(ms, rawMetrics, metricsDefinition)
-	populateMetrics(ms, rawMetrics, commonDefinition)
 
-	for _, columnFamilyMetrics := range allColumnFamilies {
-		s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
-		populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
-		populateMetrics(s, rawMetrics, commonDefinition)
+	commonMetrics, err := getMetrics(jmxClient, commonDefinitions)
+	if err != nil {
+		return err
+	}
+
+	ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
+	populateMetrics(ms, rawMetrics, metricDefinitions)
+	populateMetrics(ms, commonMetrics, commonDefinitions)
+
+	if args.ColumnFamiliesLimit > 0 {
+		allColumnFamilies, err := getColumnFamilyMetrics(jmxClient, columnFamilyDefinitions)
+		if err != nil {
+			return err
+		}
+
+		for _, columnFamilyMetrics := range allColumnFamilies {
+			s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
+			populateMetrics(s, commonMetrics, commonDefinitions)
+			populateMetrics(s, columnFamilyMetrics, columnFamilyDefinitions)
+			populateAttributes(s, columnFamilyMetrics, columnFamiliesSampleAttributes)
+		}
 	}
 	return nil
 }
