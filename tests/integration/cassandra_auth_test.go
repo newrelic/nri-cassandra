@@ -132,7 +132,7 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
 
 				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},
-			expectedError: "Authentication failed! Invalid username or password",
+			expectedError: "java.security.NoSuchAlgorithmException",
 		},
 	}
 
