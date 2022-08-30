@@ -19,13 +19,6 @@ import (
 	"time"
 )
 
-var (
-	integrationBinPath       = "/nri-cassandra"
-	integrationContainerName = "integration_nri-cassandra_1"
-	cassandraContainerName   = "integration_cassandra_1"
-	schemaDir                = fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
-)
-
 type CassandraLongRunningTestSuite struct {
 	suite.Suite
 	compose *testcontainers.LocalDockerCompose
@@ -53,7 +46,7 @@ func (s *CassandraLongRunningTestSuite) TearDownSuite() {
 func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningIntegration() {
 	t := s.T()
 
-	testName := testutils.GetTestName(t)
+	testName := t.Name()
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), 300*time.Second)
 	defer cancelFn()
@@ -74,9 +67,9 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 		// "ENABLE_INTERNAL_STATS": "true",
 	}
 
-	cmd := testutils.NewDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	cmd := testutils.NewDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 
-	output, err := testutils.StartLongRunningProcess(ctx, cmd)
+	output, err := testutils.StartLongRunningProcess(ctx, t, cmd)
 	assert.NoError(t, err)
 
 	go func() {
@@ -88,10 +81,11 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 		}
 	}()
 
+	schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
 	schemaFile := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
 	testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 10*time.Second)
 
-	err = testutils.RunDockerCommandForContainer("stop", cassandraContainerName)
+	err = testutils.RunDockerCommandForContainer(t, "stop", cassandraContainerName)
 	require.NoError(t, err)
 
 	// Wait for the jmx connection to fail. We need to give it time as it might
@@ -100,13 +94,13 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 	log.Info("Waiting for jmx connection to fail")
 	time.Sleep(60 * time.Second)
 
-	err = testutils.RunDockerCommandForContainer("start", cassandraContainerName)
+	err = testutils.RunDockerCommandForContainer(t, "start", cassandraContainerName)
 	require.NoError(t, err)
 
 	log.Info("Waiting for cassandra server to be up again")
 	time.Sleep(30 * time.Second)
 
-	_, stderr := output.Flush()
+	_, stderr := output.Flush(t)
 
 	testutils.AssertReceivedErrors(t, "connection error", stderr...)
 

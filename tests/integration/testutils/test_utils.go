@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+////go:build integration
+////+build integration
 
 /*
  * Copyright 2021 New Relic Corporation. All rights reserved.
@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/newrelic/infra-integrations-sdk/log"
 	"io"
 	"os"
 	"os/exec"

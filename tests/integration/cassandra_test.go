@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+////go:build integration
+//// +build integration
 
 package integration
 
@@ -24,6 +24,7 @@ const (
 
 	integrationBinPath       = "/nri-cassandra"
 	integrationContainerName = "integration_nri-cassandra_1"
+	cassandraContainerName   = "integration_cassandra_1"
 )
 
 type CassandraTestSuite struct {
