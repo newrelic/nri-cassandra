@@ -80,6 +80,7 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
 
 	assert.Empty(t, testutils.FilterStderr(stderr))
 
+	schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
 	schemaPath := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
 
 	err = jsonschema.Validate(schemaPath, stdout)

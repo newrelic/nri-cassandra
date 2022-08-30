@@ -120,7 +120,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
 
 			assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
 
-			schemaDir = fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
+			schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
 			schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
 
 			err = jsonschema.Validate(schemaPath, stdout)
