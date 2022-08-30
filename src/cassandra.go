@@ -111,14 +111,12 @@ func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) er
 
 // collectMetricsEachInterval will collect the metrics periodically when configured in long-running mode.
 func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Client) error {
-
 	metricInterval := time.NewTicker(time.Duration(args.Interval) * time.Second)
 
 	runHeartBeat()
 
 	// do ... while.
 	for ; true; <-metricInterval.C {
-
 		// Check if the nrjmx java sub-process is still alive.
 		if !jmxClient.IsRunning() {
 			return errNRJMXNotRunning

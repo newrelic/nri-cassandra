@@ -8,15 +8,16 @@ package integration
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"testing"
+	"time"
+
 	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 type CassandraLongRunningTestSuite struct {
@@ -73,7 +74,7 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 	assert.NoError(t, err)
 
 	go func() {
-		err := cmd.Wait()
+		err = cmd.Wait()
 
 		// Avoid failing the test when we cancel the context at the end. (This is a long-running integration)
 		if ctx.Err() == nil {
