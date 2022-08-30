@@ -11,16 +11,17 @@ package integration
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
-	"path/filepath"
-	"strings"
-	"testing"
-	"time"
 )
 
 const (
@@ -29,6 +30,7 @@ const (
 
 	integrationBinPath       = "/nri-cassandra"
 	integrationContainerName = "integration_nri-cassandra_1"
+	cassandraContainerName   = "integration_cassandra_1"
 )
 
 type CassandraTestSuite struct {
