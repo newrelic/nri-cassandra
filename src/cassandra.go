@@ -227,7 +227,22 @@ func openJMXConnection() (*gojmx.Client, error) {
 
 	log.Debug("nrjmx version: %s, config: %s", jmxClient.GetClientVersion(), formattedConfig)
 
-	return jmxClient, err
+	if err != nil {
+		// When not in long-running mode, we cannot recover from any type of connection error.
+		// However, in long-running mode, we can recover later from errors related with connection, except JMXClient error
+		// which means that the nrjmx java sub-process was closed.
+		if _, ok := gojmx.IsJMXClientError(err); ok || !args.LongRunning {
+			return nil, fmt.Errorf("failed to open JMX connection, error: %w, Config: (%s)",
+				err,
+				formattedConfig,
+			)
+		}
+
+		// In long-running mode just log the error.
+		log.Error("Error while connecting to jmx connection, err: %v", err)
+	}
+
+	return jmxClient, nil
 }
 
 func entity(i *integration.Integration) (*integration.Entity, error) {
