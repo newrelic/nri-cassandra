@@ -26,18 +26,9 @@ import (
 const (
 	envCassandraVersion = "3.11.0"
 	timeout             = "5000"
-)
-
-var (
-	iName = "cassandra"
-
-	iVersion = "1.1.0"
 
 	integrationBinPath       = "/nri-cassandra"
 	integrationContainerName = "integration_nri-cassandra_1"
-	cassandraContainerName   = "integration_cassandra_1"
-
-	schemaDir = fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
 )
 
 type CassandraTestSuite struct {
@@ -129,6 +120,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
 
 			assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
 
+			schemaDir = fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
 			schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
 
 			err = jsonschema.Validate(schemaPath, stdout)
