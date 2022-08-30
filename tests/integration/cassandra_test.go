@@ -1,21 +1,27 @@
-////go:build integration
-//// +build integration
+//go:build integration
+// +build integration
+
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package integration
 
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
-	"path/filepath"
-	"strings"
-	"testing"
-	"time"
 )
 
 const (
