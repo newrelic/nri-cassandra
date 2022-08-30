@@ -73,9 +73,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	e, err := entity(i)
-	fatalIfErr(err)
-
 	if args.HasMetrics() {
 		jmxClient, conErr := openJMXConnection()
 		fatalIfErr(conErr)
@@ -87,11 +84,14 @@ func main() {
 			}
 		}()
 
-		err := runMetricCollection(i, e, jmxClient)
+		err := runMetricCollection(i, jmxClient)
 		fatalIfErr(err)
 	}
 
 	if args.HasInventory() {
+		e, err := entity(i)
+		fatalIfErr(err)
+
 		rawInventory, err := getInventory()
 		fatalIfErr(err)
 		err = populateInventory(e.Inventory, rawInventory)
@@ -101,44 +101,30 @@ func main() {
 	fatalIfErr(i.Publish())
 }
 
-func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxClient *gojmx.Client) error {
-	if !args.LongRunning {
-		return collectMetrics(e, jmxClient)
+// runMetricCollection will perform the metrics collection.
+func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) error {
+	if args.LongRunning {
+		return collectMetricsEachInterval(i, jmxClient)
 	}
+	return collectMetrics(i, jmxClient)
+}
 
-	heartBeat := time.NewTicker(time.Duration(args.HeartbeatInterval) * time.Second)
-	metricInterval := time.NewTicker(time.Millisecond)
+// collectMetricsEachInterval will collect the metrics periodically when configured in long-running mode.
+func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Client) error {
 
-	go func() {
-		for range heartBeat.C {
-			log.Debug("Sending heartBeat")
-			// heartbeat signal for long-running integrations
-			// https://docs.newrelic.com/docs/integrations/integrations-sdk/file-specifications/host-integrations-newer-configuration-format#timeout
-			fmt.Println("{}")
-		}
-	}()
+	metricInterval := time.NewTicker(time.Duration(args.Interval) * time.Second)
 
-	// Force the first collection to happen immediately.
-	first := true
+	runHeartBeat()
 
-	for range metricInterval.C {
-		if first {
-			metricInterval.Reset(time.Duration(args.Interval) * time.Second)
-			first = false
-		}
+	// do ... while.
+	for ; true; <-metricInterval.C {
 
 		// Check if the nrjmx java sub-process is still alive.
 		if !jmxClient.IsRunning() {
 			return errNRJMXNotRunning
 		}
 
-		e2, err := entity(i)
-		if err != nil {
-			log.Error("Failed to create entity: %v", err)
-			continue
-		}
-
-		if err := collectMetrics(e2, jmxClient); err != nil {
+		if err := collectMetrics(i, jmxClient); err != nil {
 			log.Error("Failed to collect metrics, error: %v", err)
 			continue
 		}
@@ -152,17 +138,23 @@ func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxC
 	return nil
 }
 
-func collectMetrics(entity *integration.Entity, jmxClient *gojmx.Client) error {
+// collectMetrics will gather all the required metrics from the JMX endpoint and attach them the the sdk integration.
+func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client) error {
+	e, err := entity(i)
+	if err != nil {
+		return fmt.Errorf("failed to create entity: %w", err)
+	}
+
 	rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
 	if err != nil {
 		return err
 	}
-	ms := metricSet(entity, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
+	ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
 	populateMetrics(ms, rawMetrics, metricsDefinition)
 	populateMetrics(ms, rawMetrics, commonDefinition)
 
 	for _, columnFamilyMetrics := range allColumnFamilies {
-		s := metricSet(entity, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
+		s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
 		populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
 		populateMetrics(s, rawMetrics, commonDefinition)
 	}
@@ -256,6 +248,20 @@ func entity(i *integration.Integration) (*integration.Entity, error) {
 	}
 
 	return i.LocalEntity(), nil
+}
+
+// runHeartBeat is used in long-running mode to signal to the agent that the integration is alive.
+func runHeartBeat() {
+	heartBeat := time.NewTicker(time.Duration(args.HeartbeatInterval) * time.Second)
+
+	go func() {
+		for range heartBeat.C {
+			log.Debug("Sending heartBeat")
+			// heartbeat signal for long-running integrations
+			// https://docs.newrelic.com/docs/integrations/integrations-sdk/file-specifications/host-integrations-newer-configuration-format#timeout
+			fmt.Println("{}")
+		}
+	}()
 }
 
 func fatalIfErr(err error) {
