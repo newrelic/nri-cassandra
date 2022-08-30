@@ -1,19 +1,23 @@
 //go:build integration
 // +build integration
 
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration
 
 import (
-	"flag"
+	"context"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/log"
-	"github.com/newrelic/nri-cassandra/tests/integration/helpers"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
+	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"github.com/testcontainers/testcontainers-go"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -21,388 +25,182 @@ import (
 
 const (
 	envCassandraVersion = "3.11.0"
-	timeout             = "30000"
+	timeout             = "5000"
+
+	integrationBinPath       = "/nri-cassandra"
+	integrationContainerName = "integration_nri-cassandra_1"
 )
 
-var (
-	iName = "cassandra"
-
-	defaultContainer = "integration_nri-cassandra_1"
-
-	iVersion = "1.1.0"
-
-	defaultBinPath  = "/nri-cassandra"
-	defaultHostname = "cassandra"
-
-	schemaFolder = fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
-
-	// cli flags
-	container = flag.String("container", defaultContainer, "container where the integration is installed")
-	binPath   = flag.String("bin", defaultBinPath, "Integration binary path")
-
-	hostname = flag.String("hostname", defaultHostname, "cassandra hostname")
-)
-
-// Returns the standard output, or fails testing if the command returned an error
-func runIntegration(t *testing.T, envVars ...string) (string, string, error) {
-	t.Helper()
-
-	command := make([]string, 0)
-	command = append(command, *binPath)
-
-	var found bool
-	for _, envVar := range envVars {
-		if strings.HasPrefix(envVar, "HOSTNAME") {
-			found = true
-			break
-		}
-	}
-
-	if !found && hostname != nil {
-		command = append(command, "--hostname", *hostname)
-	}
-
-	stdout, stderr, err := helpers.ExecInContainer(*container, command, envVars...)
-
-	if stderr != "" {
-		log.Debug("Integration command Standard Error: ", stderr)
-	}
-
-	return stdout, stderr, err
+type CassandraTestSuite struct {
+	suite.Suite
+	compose *testcontainers.LocalDockerCompose
 }
 
-func TestMain(m *testing.M) {
-	fmt.Println("Wait for cassandra to initialize...")
+func TestCassandraTestSuite(t *testing.T) {
+	suite.Run(t, new(CassandraTestSuite))
+}
+
+func (s *CassandraTestSuite) SetupSuite() {
+	s.compose = testutils.ConfigureCassandraDockerCompose()
+
+	err := testutils.RunDockerCompose(s.compose)
+	require.NoError(s.T(), err)
+
+	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
+	s.T().Log("Wait for cassandra to initialize...")
 	time.Sleep(30 * time.Second)
-
-	flag.Parse()
-
-	result := m.Run()
-
-	os.Exit(result)
 }
 
-func TestCassandraIntegration_ValidArguments(t *testing.T) {
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
-		fmt.Sprintf("TIMEOUT=%v", timeout),
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
-
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-	assert.NotNil(t, stderr, "unexpected stderr")
-
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+func (s *CassandraTestSuite) TearDownSuite() {
+	s.compose.Down()
 }
 
-func TestCassandraIntegration_OnlyMetrics(t *testing.T) {
-	testName := helpers.GetTestName(t)
+func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
+	t := s.T()
 
-	stdout, stderr, err := runIntegration(t,
-		"METRICS=true",
-		fmt.Sprintf("TIMEOUT=%v", timeout),
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
+	testName := t.Name()
 
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancelFn()
 
-	assert.NotNil(t, stderr, "unexpected stderr")
-
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema-metrics.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-}
-
-func TestCassandraIntegration_OnlyInventory(t *testing.T) {
-	testName := helpers.GetTestName(t)
-	stdout, stderr, err := runIntegration(t,
-		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
-		"INVENTORY=true",
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
-
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-	assert.NotNil(t, stderr, "unexpected stderr")
-
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema-inventory.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-}
-
-func TestCassandraIntegration_Error_NoUserCredentials(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
-
-	expectedErrorMessage := "Access denied"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_NoError_NoUserCredentials_OnlyInventory(t *testing.T) {
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"INVENTORY=true",
-		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
-
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-	assert.NotNil(t, stderr, "unexpected stderr")
-
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema-inventory.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-}
-
-func TestCassandraIntegration_Error_NoPassword(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"USERNAME=monitorRole",
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
-	expectedErrorMessage := "Access denied"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_Error_InvalidPassword(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"USERNAME=monitorRole",
-		"PASSWORD=invalid_password",
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
-
-	expectedErrorMessage := "Access denied"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_Error_InvalidUsername(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"USERNAME=invalid_username",
-		"PASSWORD=monitorPwd",
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
-
-	expectedErrorMessage := "Access denied"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_Error_InvalidHostname(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
-	stdout, stderr, err := runIntegration(t,
-		"HOSTNAME=nonExistingHost",
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
-
-	expectedErrorMessage := "no such host"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_Error_InvalidPort(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	testName := helpers.GetTestName(t)
-	stdout, stderr, err := runIntegration(t,
-		"USERNAME=monitorRole",
-		"PASSWORD=monitorPwd",
-		"PORT=1",
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
-
-	expectedErrorMessage := "Failed to connect, invalid port"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_Error_InvalidConfigPath_NonExistingFile(t *testing.T) {
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"CONFIG_PATH=/nonExisting.yaml",
-		"INVENTORY=true",
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
-
-	expectedErrorMessage := "no such file or directory"
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
-
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
-
-func TestCassandraIntegration_NoError_InvalidConfigPath_NonExistingFile_OnlyMetrics(t *testing.T) {
-	testName := helpers.GetTestName(t)
-
-	stdout, stderr, err := runIntegration(t,
-		"CONFIG_PATH=/nonExisting.yaml",
-		"USERNAME=monitorRole",
-		"PASSWORD=monitorPwd",
-		"METRICS=true",
-		fmt.Sprintf("TIMEOUT=%v", timeout),
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
-
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-	assert.NotNil(t, stderr, "unexpected stderr")
-
-	// Cassandra 3.7 does not report DataCenter and Racks names through JMX
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema-metrics.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-}
-
-func TestCassandraIntegration_Error_InvalidConfigPath_ExistingFile(t *testing.T) {
-	t.Skip("Skipping test - not correct message return - it will be fixed in JIRA ticket IHOST-176")
-	tmpfile, err := ioutil.TempFile("", "empty.yaml")
-	if err != nil {
-		t.Fatalf("Cannot create a new temporary file, got error: %v", err)
+	testCases := []struct {
+		name       string
+		config     map[string]string
+		schemaFile string
+	}{
+		{
+			name: "ValidArguments",
+			config: map[string]string{
+				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
+				"HOSTNAME":        testutils.Hostname,
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			schemaFile: "cassandra-schema.json",
+		},
+		{
+			name: "OnlyMetrics",
+			config: map[string]string{
+				"METRICS":         "true",
+				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
+				"HOSTNAME":        testutils.Hostname,
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			schemaFile: "cassandra-schema-metrics.json",
+		},
+		{
+			name: "OnlyInventory",
+			config: map[string]string{
+				"INVENTORY":       "true",
+				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
+				"HOSTNAME":        testutils.Hostname,
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			schemaFile: "cassandra-schema-inventory.json",
+		},
+		{
+			name: "InvalidConfigPath_NonExistingFile_OnlyMetrics",
+			config: map[string]string{
+				"CONFIG_PATH":     "/nonExisting.yaml",
+				"METRICS":         "true",
+				"HOSTNAME":        testutils.Hostname,
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			schemaFile: "cassandra-schema-metrics.json",
+		},
 	}
-	defer os.Remove(tmpfile.Name())
 
-	testName := helpers.GetTestName(t)
-	stdout, stderr, err := runIntegration(t,
-		fmt.Sprintf("CONFIG_PATH=%s", tmpfile.Name()),
-		"INVENTORY=true",
-		fmt.Sprintf("NRIA_CACHE_PATH=%v", testName),
-	)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+			assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+			assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
 
-	expectedErrorMessage := "Config path not correctly set, cannot fetch inventory data"
+			schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
+			schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
 
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema-empty.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
+			err = jsonschema.Validate(schemaPath, stdout)
+			assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+		})
+	}
 }
 
-func TestCassandraIntegration_Error_InvalidConfigPath_ExistingDirectory(t *testing.T) {
-	testName := helpers.GetTestName(t)
+func (s *CassandraTestSuite) TestCassandraIntegration_WrongConfig() {
+	t := s.T()
 
-	stdout, stderr, err := runIntegration(t,
-		fmt.Sprintf("CONFIG_PATH=%s", "/etc/cassandra/"),
-		"INVENTORY=true",
-		fmt.Sprintf("NRIA_CACHE_PATH=/tmp/%v.json", testName),
-	)
+	testName := t.Name()
 
-	expectedErrorMessage := "is a directory"
+	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancelFn()
 
-	errMatch, _ := regexp.MatchString(expectedErrorMessage, stderr)
-	assert.Error(t, err, "Expected error")
-	assert.Truef(t, errMatch, "Expected error message: '%s', got: '%s'", expectedErrorMessage, stderr)
+	// Create an empty file in the container, required for some tests.
+	path := "/tmp/empty.yaml"
+	_, _, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{"touch", path}, nil)
+	assert.NoError(t, err)
 
-	assert.NotNil(t, stdout, "unexpected stdout")
-}
+	testCases := []struct {
+		name          string
+		config        map[string]string
+		expectedError string
+	}{
+		{
+			name: "InvalidPort",
+			config: map[string]string{
+				"METRICS":         "true",
+				"HOSTNAME":        "wrong_hostname",
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "Unknown host",
+		},
+		{
+			name: "InvalidHostname",
+			config: map[string]string{
+				"METRICS":         "true",
+				"HOSTNAME":        testutils.Hostname,
+				"PORT":            "1",
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "Connection refused",
+		},
+		{
+			name: "InvalidConfigPath_NonExistingFile",
+			config: map[string]string{
+				"CONFIG_PATH":     "/nonExisting.yaml",
+				"INVENTORY":       "true",
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "no such file or directory",
+		},
+		{
+			name: "InvalidConfigPath_ExistingDirectory",
+			config: map[string]string{
+				"CONFIG_PATH":     "/etc/cassandra/",
+				"INVENTORY":       "true",
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "is a directory",
+		},
+		{
+			name: "InvalidConfigPath_ExistingFile",
+			config: map[string]string{
+				"CONFIG_PATH":     path,
+				"INVENTORY":       "true",
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "config path not correctly set, cannot fetch inventory data",
+		},
+	}
 
-func TestCassandraIntegration_NoError_IncompleteSSLConfig(t *testing.T) {
-	// Enabling SSL requires setting all 4 keystore/truststore options.
-	//
-	// In this test, the SSL configuration is incomplete, because
-	// TRUST_STORE_PASSWORD is not defined.
-	//
-	// nri-cassandra ignores incomplete SSL config, so it calls nrjmx
-	// without SSL options. Since the Cassandra container is not encrypting
-	// JMX connections, the call succeeds.
+	for _, testCase := range testCases {
+		stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+		assert.Error(t, err, "Expected error")
 
-	stdout, stderr, err := runIntegration(t,
-		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
-		"KEY_STORE=/etc/cassandra/keystore.p12",
-		"KEY_STORE_PASSWORD=keystorePassword",
-		"TRUST_STORE=/etc/cassandra/truststore.p12",
-	)
-
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-	assert.NotNil(t, stderr, "unexpected stderr")
-
-	schemaPath := filepath.Join(schemaFolder, "cassandra-schema.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-}
-
-func TestCassandraIntegration_Error_InvalidSSLConfig(t *testing.T) {
-	// Setting all 4 keystore/truststore options causes nri-cassandra to
-	// call nrjmx with SSL options.
-	//
-	// Because the nri-cassandra command fails, the test confirms that the
-	// SSL options are being passed through to nrjmx. Otherwise, the call
-	// would succeed, as it does in the NoError_IncompleteSSLConfig test.
-	//
-	// Call fails because Cassandra is not encrypting JMX connections, and
-	// because Keystore and Truststore paths don't exist.
-
-	stdout, stderr, err := runIntegration(t,
-		"CONFIG_PATH=/etc/cassandra/cassandra.yaml",
-		"KEY_STORE=/etc/cassandra/keystore.p12",
-		"KEY_STORE_PASSWORD=keystorePassword",
-		"TRUST_STORE=/etc/cassandra/truststore.p12",
-		"TRUST_STORE_PASSWORD=trustStorePassword",
-	)
-
-	assert.NotNil(t, stdout, "Unexpected stdout")
-	assert.NotNil(t, stderr, "Unexpected stderr")
-	assert.Error(t, err, "Expected error")
+		assert.Empty(t, stdout, "Unexpected stdout content")
+		testutils.AssertReceivedErrors(t, testCase.expectedError, strings.Split(stderr, "\n")...)
+	}
 }
