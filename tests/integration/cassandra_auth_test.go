@@ -11,7 +11,6 @@ package integration
 import (
 	"context"
 	"fmt"
-	"github.com/newrelic/infra-integrations-sdk/log"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +43,7 @@ func (s *CassandraSSLTestSuite) SetupSuite() {
 	require.NoError(s.T(), err)
 
 	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
-	log.Info("Wait for cassandra to initialize...")
+	s.T().Log("Wait for cassandra to initialize...")
 	time.Sleep(30 * time.Second)
 }
 
@@ -55,7 +54,7 @@ func (s *CassandraSSLTestSuite) TearDownSuite() {
 func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
 	t := s.T()
 
-	testName := testutils.GetTestName(t)
+	testName := t.Name()
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFn()
@@ -68,83 +67,86 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
 		"USERNAME": testutils.JMXUsername,
 		"PASSWORD": testutils.JMXPassword,
 
-		"TRUST_STORE":          "/certs/cassandra.truststore",
+		"TRUST_STORE":          testutils.TruststoreFile,
 		"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
-		"KEY_STORE":            "/certs/cassandra.keystore",
+		"KEY_STORE":            testutils.KeystoreFile,
 		"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
 
 		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
+	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 	assert.Empty(t, testutils.FilterStderr(stderr))
 
+	schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
 	schemaPath := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
 
 	err = jsonschema.Validate(schemaPath, stdout)
 	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
 }
 
-func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongPassword() {
+func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
 	t := s.T()
 
-	testName := testutils.GetTestName(t)
+	testName := t.Name()
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancelFn()
+	testCases := []struct {
+		name          string
+		config        map[string]string
+		expectedError string
+	}{
+		{
+			name: "WrongPassword",
+			config: map[string]string{
+				"METRICS": "true",
+				"TIMEOUT": SSLConnectionTimeout,
 
-	env := map[string]string{
-		"METRICS": "true",
-		"TIMEOUT": SSLConnectionTimeout,
+				"HOSTNAME": testutils.Hostname,
+				"USERNAME": "wrong",
+				"PASSWORD": "wrong",
 
-		"HOSTNAME": testutils.Hostname,
-		"USERNAME": "wrong",
-		"PASSWORD": "wrong",
+				"TRUST_STORE":          testutils.TruststoreFile,
+				"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
+				"KEY_STORE":            testutils.KeystoreFile,
+				"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
 
-		"TRUST_STORE":          "/certs/cassandra.truststore",
-		"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
-		"KEY_STORE":            "/certs/cassandra.keystore",
-		"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "Authentication failed! Invalid username or password",
+		},
+		{
+			name: "WrongKeyStorePassword",
+			config: map[string]string{
+				"METRICS": "true",
+				"TIMEOUT": SSLConnectionTimeout,
 
-		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+				"HOSTNAME": testutils.Hostname,
+				"USERNAME": testutils.JMXUsername,
+				"PASSWORD": testutils.JMXPassword,
+
+				"TRUST_STORE":          testutils.TruststoreFile,
+				"TRUST_STORE_PASSWORD": "wrong",
+				"KEY_STORE":            testutils.KeystoreFile,
+				"KEY_STORE_PASSWORD":   "wrong",
+
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			expectedError: "java.security.NoSuchAlgorithmException",
+		},
 	}
 
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
-	assert.Error(t, err)
-	assert.Empty(t, stdout)
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancelFn()
 
-	testutils.AssertReceivedErrors(t, "Authentication failed! Invalid username or password", strings.Split(stderr, "\n")...)
-}
+			stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+			assert.Error(t, err)
+			assert.Empty(t, stdout)
 
-func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongKeyStorePassword() {
-	t := s.T()
-
-	testName := testutils.GetTestName(t)
-
-	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancelFn()
-
-	env := map[string]string{
-		"METRICS": "true",
-		"TIMEOUT": SSLConnectionTimeout,
-
-		"HOSTNAME": testutils.Hostname,
-		"USERNAME": testutils.JMXUsername,
-		"PASSWORD": testutils.JMXPassword,
-
-		"TRUST_STORE":          "/certs/cassandra.truststore",
-		"TRUST_STORE_PASSWORD": "wrong",
-		"KEY_STORE":            "/certs/cassandra.keystore",
-		"KEY_STORE_PASSWORD":   "wrong",
-
-		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			testutils.AssertReceivedErrors(t, testCase.expectedError, strings.Split(stderr, "\n")...)
+		})
 	}
-
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, integrationContainerName, []string{integrationBinPath}, env)
-	assert.Error(t, err)
-	assert.Empty(t, stdout)
-
-	testutils.AssertReceivedErrors(t, "java.security.NoSuchAlgorithmException", strings.Split(stderr, "\n")...)
 }

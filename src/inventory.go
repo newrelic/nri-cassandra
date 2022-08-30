@@ -28,12 +28,15 @@ func getInventory() (map[string]interface{}, error) {
 
 	i := make(inventory.Item)
 	err = yaml.Unmarshal(rawYamlFile, &i)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(i) == 0 {
 		return nil, errNoInventoryData
 	}
 
-	return i, err
+	return i, nil
 }
 
 func populateInventory(i *inventory.Inventory, rawInventory inventory.Item) error {
