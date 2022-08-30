@@ -103,8 +103,7 @@ func main() {
 
 func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxClient *gojmx.Client) error {
 	if !args.LongRunning {
-		collectMetrics(e, jmxClient)
-		return nil
+		return collectMetrics(e, jmxClient)
 	}
 
 	heartBeat := time.NewTicker(time.Duration(args.HeartbeatInterval) * time.Second)
@@ -139,7 +138,10 @@ func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxC
 			continue
 		}
 
-		collectMetrics(e2, jmxClient)
+		if err := collectMetrics(e2, jmxClient); err != nil {
+			log.Error("Failed to collect metrics, error: %v", err)
+			continue
+		}
 
 		if err := i.Publish(); err != nil {
 			log.Error("Failed to publish metrics, error: %v", err)
@@ -150,9 +152,11 @@ func runMetricCollection(i *integration.Integration, e *integration.Entity, jmxC
 	return nil
 }
 
-func collectMetrics(entity *integration.Entity, jmxClient *gojmx.Client) {
+func collectMetrics(entity *integration.Entity, jmxClient *gojmx.Client) error {
 	rawMetrics, allColumnFamilies, err := getMetrics(jmxClient)
-	fatalIfErr(err)
+	if err != nil {
+		return err
+	}
 	ms := metricSet(entity, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
 	populateMetrics(ms, rawMetrics, metricsDefinition)
 	populateMetrics(ms, rawMetrics, commonDefinition)
@@ -162,6 +166,7 @@ func collectMetrics(entity *integration.Entity, jmxClient *gojmx.Client) {
 		populateMetrics(s, columnFamilyMetrics, columnFamilyDefinition)
 		populateMetrics(s, rawMetrics, commonDefinition)
 	}
+	return nil
 }
 
 func metricSet(e *integration.Entity, eventType, hostname string, port int, remoteMonitoring bool) *metric.Set {
