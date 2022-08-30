@@ -87,6 +87,7 @@ func main() {
 			}
 		}()
 
+		err := runMetricCollection(i, e, jmxClient)
 		fatalIfErr(err)
 	}
 
