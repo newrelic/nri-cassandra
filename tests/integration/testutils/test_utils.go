@@ -27,36 +27,32 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 )
 
-// GetTestName returns the name of the running test.
-func GetTestName(t *testing.T) interface{} {
-	return t.Name()
-}
-
 const (
 	// Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
 	Hostname           = "cassandra"
 	JMXUsername        = "cassandra"
 	JMXPassword        = "cassandra"
 	KeystorePassword   = "cassandra"
+	KeystoreFile       = "/certs/cassandra.keystore"
 	TruststorePassword = "cassandra"
+	TruststoreFile     = "/certs/cassandra.truststore"
 )
 
-var (
-	// PrjDir root of the repo.
-	PrjDir string
-	// TestPath to integration tests.
-	TestPath string
-)
-
-func init() {
+// GetIntegrationTestsPath return the absolute path to this project's integration tests.
+func GetIntegrationTestsPath() (testsPath string) {
 	var err error
-	TestPath, err = os.Getwd()
+	testsPath, err = os.Getwd()
 	if err != nil {
 		panic(err)
 	}
+	return
+}
 
+// GetPrjDir returns the main directory from this project. (where go.mod file is located.)
+func GetPrjDir() string {
+	testsPath := GetIntegrationTestsPath()
 	// Configure tests to point to the project's tests directory.
-	PrjDir = filepath.Join(TestPath, "../..")
+	return filepath.Join(testsPath, "../..")
 }
 
 // RunDockerExecCommand executes the given command inside the specified container.
@@ -195,7 +191,7 @@ func RunDockerCompose(compose *testcontainers.LocalDockerCompose) error {
 func ConfigureCassandraDockerCompose() *testcontainers.LocalDockerCompose {
 	identifier := strings.ToLower(uuid.New().String())
 
-	composeFilePaths := []string{filepath.Join(TestPath, "docker-compose.yml")}
+	composeFilePaths := []string{filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")}
 
 	compose := testcontainers.NewLocalDockerCompose(composeFilePaths, identifier)
 
@@ -213,7 +209,7 @@ func ConfigureCassandraDockerCompose() *testcontainers.LocalDockerCompose {
 func ConfigureSSLCassandraDockerCompose() *testcontainers.LocalDockerCompose {
 	identifier := strings.ToLower(uuid.New().String())
 
-	composeFilePaths := []string{filepath.Join(TestPath, "docker-compose.yml")}
+	composeFilePaths := []string{filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")}
 
 	compose := testcontainers.NewLocalDockerCompose(composeFilePaths, identifier)
 

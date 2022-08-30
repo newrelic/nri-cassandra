@@ -1,1 +1,0 @@
-password=cassandra
