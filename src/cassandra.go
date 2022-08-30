@@ -38,9 +38,9 @@ type argumentList struct {
 	TrustStore          string `default:"" help:"The location for the keystore containing JMX Server's SSL certificate"`
 	TrustStorePassword  string `default:"" help:"Password for the SSL Trust Store"`
 	ShowVersion         bool   `default:"false" help:"Print build information and exit"`
-	LongRunning         bool   `default:"false" help:"In long-running mode integration process will be kept alive"`
-	HeartbeatInterval   int    `default:"5" help:"Interval in seconds for submitting the heartbeat while in long-running mode"`
-	Interval            int    `default:"30" help:"Interval in seconds for collecting data while while in long-running mode"`
+	LongRunning         bool   `default:"false" help:"BETA: In long-running mode integration process will be kept alive"`
+	HeartbeatInterval   int    `default:"5" help:"BETA: Interval in seconds for submitting the heartbeat while in long-running mode"`
+	Interval            int    `default:"30" help:"BETA: Interval in seconds for collecting data while while in long-running mode"`
 }
 
 const (
