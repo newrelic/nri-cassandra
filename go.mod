@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/google/uuid v1.3.0
 	github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible
-	github.com/newrelic/nrjmx/gojmx v0.0.0-20220824072913-0b9ce66cfbe9
+	github.com/newrelic/nrjmx/gojmx v0.0.0-20220831103627-56d00601006c
 	github.com/stretchr/testify v1.8.0
 	github.com/testcontainers/testcontainers-go v0.12.0
 	github.com/xeipuuv/gojsonschema v1.2.0

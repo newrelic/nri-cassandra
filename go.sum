@@ -510,6 +510,8 @@ github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible h1:+o/MxTzFsC3BRV
 github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible/go.mod h1:tMUHRMq6mJS0YyBnbWrTXAnREnQqC1AGO6Lu45u5xAM=
 github.com/newrelic/nrjmx/gojmx v0.0.0-20220824072913-0b9ce66cfbe9 h1:9Wr6q7GxCfe12o2yaasZt1RGMd2GlLWsCD6N/rQuKxQ=
 github.com/newrelic/nrjmx/gojmx v0.0.0-20220824072913-0b9ce66cfbe9/go.mod h1:zd01rBtry4cfiVBXpUhBeEjolk86vMczWd/d7QQHGK8=
+github.com/newrelic/nrjmx/gojmx v0.0.0-20220831103627-56d00601006c h1:B6Fj3lqF+NnztRe+DMXRJsp+gKRKhznmQd5qzQAEP/U=
+github.com/newrelic/nrjmx/gojmx v0.0.0-20220831103627-56d00601006c/go.mod h1:zd01rBtry4cfiVBXpUhBeEjolk86vMczWd/d7QQHGK8=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
