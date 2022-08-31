@@ -41,6 +41,7 @@ type argumentList struct {
 	LongRunning         bool   `default:"false" help:"BETA: In long-running mode integration process will be kept alive"`
 	HeartbeatInterval   int    `default:"5" help:"BETA: Interval in seconds for submitting the heartbeat while in long-running mode"`
 	Interval            int    `default:"30" help:"BETA: Interval in seconds for collecting data while while in long-running mode"`
+	EnableInternalStats bool   `default:"false" help:"Print nrjmx internal query stats for troubleshooting"`
 }
 
 const (
@@ -138,6 +139,14 @@ func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Cli
 
 // collectMetrics will gather all the required metrics from the JMX endpoint and attach them the the sdk integration.
 func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client) error {
+	// For troubleshooting purpose, if enabled, integration will log internal query stats.
+	defer func() {
+		if !args.EnableInternalStats {
+			return
+		}
+		logInternalStats(jmxClient)
+	}()
+
 	e, err := entity(i)
 	if err != nil {
 		return fmt.Errorf("failed to create entity: %w", err)
@@ -206,12 +215,13 @@ func createIntegration() (*integration.Integration, error) {
 // getJMXConfig will use the integration args to prepare the JMXConfig for the JMXClient.
 func getJMXConfig() *gojmx.JMXConfig {
 	jmxConfig := &gojmx.JMXConfig{
-		Hostname:         args.Hostname,
-		Port:             int32(args.Port),
-		Username:         args.Username,
-		Password:         args.Password,
-		RequestTimeoutMs: int64(args.Timeout),
-		Verbose:          args.Verbose,
+		Hostname:            args.Hostname,
+		Port:                int32(args.Port),
+		Username:            args.Username,
+		Password:            args.Password,
+		RequestTimeoutMs:    int64(args.Timeout),
+		Verbose:             args.Verbose,
+		EnableInternalStats: args.EnableInternalStats,
 	}
 
 	if args.KeyStore != "" && args.KeyStorePassword != "" && args.TrustStore != "" && args.TrustStorePassword != "" {
@@ -274,6 +284,23 @@ func runHeartBeat() {
 			fmt.Println("{}")
 		}
 	}()
+}
+
+// logInternalStats will print in verbose logs statistics gathered by nrjmx client
+// that can be handy when troubleshooting performance issues.
+func logInternalStats(jmxClient *gojmx.Client) {
+	internalStats, err := jmxClient.GetInternalStats()
+	if err != nil {
+		log.Error("Failed to collect nrjmx internal stats, %v", err)
+		return
+	}
+
+	for _, stat := range internalStats {
+		log.Debug("%v", stat)
+	}
+
+	// Aggregated stats.
+	log.Debug("%v", internalStats)
 }
 
 func fatalIfErr(err error) {
