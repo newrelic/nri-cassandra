@@ -1,3 +1,8 @@
+/*
+ * Copyright 2022 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package main
 
 import (
@@ -11,22 +16,36 @@ import (
 
 func TestPopulateMetrics(t *testing.T) {
 	var rawMetrics = map[string]interface{}{
-		"raw_metric_1": 1,
-		"raw_metric_2": 2,
-		"raw_metric_3": "foo",
+		"raw_metric_1,attr=Value": 1,
+		"raw_metric_2,attr=Value": 2,
+		"raw_metric_3,attr=Value": "foo",
 	}
 
-	functionSource := func(a map[string]interface{}) (float64, bool) {
-		return float64(a["raw_metric_1"].(int) + a["raw_metric_2"].(int)), true
-	}
-
-	var metricDefinition = map[string][]interface{}{
-		"rawMetric1":     {"raw_metric_1", metric.GAUGE},
-		"rawMetric2":     {"raw_metric_2", metric.GAUGE},
-		"rawMetric3":     {"raw_metric_3", metric.ATTRIBUTE},
-		"unknownMetric":  {"raw_metric_4", metric.GAUGE},
-		"badRawSource":   {10, metric.GAUGE},
-		"functionSource": {functionSource, metric.GAUGE},
+	var metricDefinition = []Query{
+		{
+			MBean: "raw_metric_1",
+			Attributes: []Attribute{
+				{MBeanAttribute: "Value", Alias: "rawMetric1", MetricType: metric.GAUGE},
+			},
+		},
+		{
+			MBean: "raw_metric_2",
+			Attributes: []Attribute{
+				{MBeanAttribute: "Value", Alias: "rawMetric2", MetricType: metric.GAUGE},
+			},
+		},
+		{
+			MBean: "raw_metric_3",
+			Attributes: []Attribute{
+				{MBeanAttribute: "Value", Alias: "rawMetric3", MetricType: metric.ATTRIBUTE},
+			},
+		},
+		{
+			MBean: "raw_metric_4",
+			Attributes: []Attribute{
+				{MBeanAttribute: "Value", Alias: "unknownMetric", MetricType: metric.GAUGE},
+			},
+		},
 	}
 
 	s := metric.NewSet("eventType", persist.NewInMemoryStore())
@@ -38,8 +57,6 @@ func TestPopulateMetrics(t *testing.T) {
 	assert.Equal(t, 2.0, sample["rawMetric2"])
 	assert.Equal(t, "foo", sample["rawMetric3"])
 	assert.Nil(t, sample["unknownMetric"])
-	assert.Nil(t, sample["badRawSource"])
-	assert.Equal(t, 3.0, sample["functionSource"])
 }
 
 func TestPopulateInventory(t *testing.T) {
