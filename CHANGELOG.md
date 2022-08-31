@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 2.10.2 (2022-06-10)
 ### Changed
 - Use Go 1.18 to compile the integration
-- Bump depencies: 
+- Bump dependencies: 
   `github.com/newrelic/infra-integrations-sdk` to version `3.7.3+incompatible`
   `github.com/stretchr/testify` to version `1.7.2`
 ### Added
