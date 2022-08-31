@@ -146,6 +146,8 @@ func getColumnFamilyQueries(client *gojmx.Client, queryConfig []Query) ([]Query,
 				if len(visitedColumnFamilies) < args.ColumnFamiliesLimit {
 					visitedColumnFamilies[eventKey] = struct{}{}
 				} else {
+					log.Warn("Skipping column family %s due to limit reached. Current limit set to %d",
+						columnFamily, args.ColumnFamiliesLimit)
 					continue
 				}
 			}
