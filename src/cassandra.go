@@ -104,14 +104,25 @@ func main() {
 
 // runMetricCollection will perform the metrics collection.
 func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) error {
-	if args.LongRunning {
-		return collectMetricsEachInterval(i, jmxClient)
+	definitions := GetDefinitions()
+
+	config, err := LoadConfig()
+	if err != nil {
+		// Not a fatal error.
+		log.Debug(
+			"no extra configuration loaded: %v", err)
+	} else {
+		definitions = definitions.FilterDefinitions(config)
 	}
-	return collectMetrics(i, jmxClient)
+
+	if args.LongRunning {
+		return collectMetricsEachInterval(i, jmxClient, definitions)
+	}
+	return collectMetrics(i, jmxClient, definitions)
 }
 
 // collectMetricsEachInterval will collect the metrics periodically when configured in long-running mode.
-func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Client) error {
+func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Client, definitions Definitions) error {
 	metricInterval := time.NewTicker(time.Duration(args.Interval) * time.Second)
 
 	runHeartBeat()
@@ -123,7 +134,7 @@ func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Cli
 			return errNRJMXNotRunning
 		}
 
-		if err := collectMetrics(i, jmxClient); err != nil {
+		if err := collectMetrics(i, jmxClient, definitions); err != nil {
 			log.Error("Failed to collect metrics, error: %v", err)
 			continue
 		}
@@ -138,7 +149,7 @@ func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Cli
 }
 
 // collectMetrics will gather all the required metrics from the JMX endpoint and attach them the the sdk integration.
-func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client) error {
+func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client, definitions Definitions) error {
 	// For troubleshooting purpose, if enabled, integration will log internal query stats.
 	if args.EnableInternalStats {
 		defer func() {
@@ -151,30 +162,30 @@ func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client) error {
 		return fmt.Errorf("failed to create entity: %w", err)
 	}
 
-	rawMetrics, err := getMetrics(jmxClient, metricDefinitions)
+	rawMetrics, err := getMetrics(jmxClient, definitions.Metrics)
 	if err != nil {
 		return err
 	}
 
-	commonMetrics, err := getMetrics(jmxClient, commonDefinitions)
+	commonMetrics, err := getMetrics(jmxClient, definitions.Common)
 	if err != nil {
 		return err
 	}
 
 	ms := metricSet(e, "CassandraSample", args.Hostname, args.Port, args.RemoteMonitoring)
-	populateMetrics(ms, rawMetrics, metricDefinitions)
-	populateMetrics(ms, commonMetrics, commonDefinitions)
+	populateMetrics(ms, rawMetrics, definitions.Metrics)
+	populateMetrics(ms, commonMetrics, definitions.Common)
 
 	if args.ColumnFamiliesLimit > 0 {
-		allColumnFamilies, err := getColumnFamilyMetrics(jmxClient, columnFamilyDefinitions)
+		allColumnFamilies, err := getColumnFamilyMetrics(jmxClient, definitions.ColumnFamilyMetrics)
 		if err != nil {
 			return err
 		}
 
 		for _, columnFamilyMetrics := range allColumnFamilies {
 			s := metricSet(e, "CassandraColumnFamilySample", args.Hostname, args.Port, args.RemoteMonitoring)
-			populateMetrics(s, commonMetrics, commonDefinitions)
-			populateMetrics(s, columnFamilyMetrics, columnFamilyDefinitions)
+			populateMetrics(s, commonMetrics, definitions.Common)
+			populateMetrics(s, columnFamilyMetrics, definitions.ColumnFamilyMetrics)
 			populateAttributes(s, columnFamilyMetrics, columnFamiliesSampleAttributes)
 		}
 	}
