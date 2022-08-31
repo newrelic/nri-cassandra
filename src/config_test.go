@@ -6,7 +6,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -21,7 +20,7 @@ exclude:
   metrics:
     - "*"
 `
-	f, err := ioutil.TempFile("", "cassandra_config.yml")
+	f, err := os.CreateTemp("", "cassandra_config.yml")
 	require.NoError(t, err)
 
 	defer func() {
@@ -72,7 +71,7 @@ include:
   metrics:
     - "*"
 `
-	f, err := ioutil.TempFile("", "cassandra_config.yml")
+	f, err := os.CreateTemp("", "cassandra_config.yml")
 	require.NoError(t, err)
 
 	defer func() {
@@ -113,7 +112,7 @@ include:
     - db.tombstoneScannedHistogram999thPercentile
 `
 
-	f, err := ioutil.TempFile("", "cassandra_config.yml")
+	f, err := os.CreateTemp("", "cassandra_config.yml")
 	require.NoError(t, err)
 
 	defer func() {
