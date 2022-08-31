@@ -19,6 +19,7 @@ var (
 	// columnFamilyRegex matches the keyspace name and the scope.
 	columnFamilyRegex = regexp.MustCompile("keyspace=(.*),scope=(.*?),")
 
+	// percentileRegex is used to detect percentile mBean attributes.
 	percentileRegex = regexp.MustCompile("attr=.*Percentile")
 
 	// filteredKeyspace set used to match internal keyspace that should not be reported.

@@ -93,7 +93,6 @@ var columnFamilyDefinitions = []Query{
 		},
 	},
 
-	// Added June 13, 2018
 	{
 		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=TombstoneScannedHistogram",
 		Attributes: []Attribute{
