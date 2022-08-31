@@ -140,12 +140,11 @@ func collectMetricsEachInterval(i *integration.Integration, jmxClient *gojmx.Cli
 // collectMetrics will gather all the required metrics from the JMX endpoint and attach them the the sdk integration.
 func collectMetrics(i *integration.Integration, jmxClient *gojmx.Client) error {
 	// For troubleshooting purpose, if enabled, integration will log internal query stats.
-	defer func() {
-		if !args.EnableInternalStats {
-			return
+		if args.EnableInternalStats {
+	    		defer func() {
+		        		logInternalStats(jmxClient)
+	    		}()
 		}
-		logInternalStats(jmxClient)
-	}()
 
 	e, err := entity(i)
 	if err != nil {
