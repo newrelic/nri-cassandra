@@ -38,9 +38,7 @@ exclude:
 	definitions := NewDefinitions()
 	definitions.Filter(config)
 
-	expected := Definitions{
-		Common: commonDefinitions,
-	}
+	expected := Definitions{}
 
 	assert.Equal(t, expected, definitions)
 }
@@ -125,7 +123,6 @@ include:
 	definitions.Filter(config)
 
 	expected := Definitions{
-		Common: commonDefinitions,
 		Metrics: []Query{
 			{
 				MBean: "org.apache.cassandra.metrics:type=Client,name=connectedNativeClients",

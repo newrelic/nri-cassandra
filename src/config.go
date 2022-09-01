@@ -52,12 +52,6 @@ func (f Config) IsFiltered(attribute Attribute) bool {
 func LoadConfig() (Config, error) {
 	result := Config{}
 
-	// Extra configuration will be enabled just when "metrics" mode is
-	// explicitly set to avoid colliding with inventory CONFIG_PATH.
-	if !args.Metrics {
-		return result, nil
-	}
-
 	configFile := os.Getenv(configPathEnv)
 	if configFile == "" {
 		log.Debug("No extra config provided")
