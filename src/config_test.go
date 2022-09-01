@@ -20,12 +20,8 @@ exclude:
   metrics:
     - "*"
 `
-	f, err := os.CreateTemp("", "cassandra_config.yml")
+	f, err := os.CreateTemp(t.TempDir(), "cassandra_config.yml")
 	require.NoError(t, err)
-
-	defer func() {
-		assert.NoError(t, os.Remove(f.Name()))
-	}()
 
 	_, err = f.WriteString(configYAML)
 	require.NoError(t, err)
@@ -39,7 +35,8 @@ exclude:
 	config, err := LoadConfig()
 	assert.NoError(t, err)
 
-	definitions := GetDefinitions().FilterDefinitions(config)
+	definitions := NewDefinitions()
+	definitions.FilterDefinitions(config)
 
 	expected := Definitions{
 		Common: commonDefinitions,
@@ -52,7 +49,8 @@ func TestWithoutFilteringConfig(t *testing.T) {
 	config, err := LoadConfig()
 	assert.NoError(t, err)
 
-	definitions := GetDefinitions().FilterDefinitions(config)
+	definitions := NewDefinitions()
+	definitions.FilterDefinitions(config)
 
 	expected := Definitions{
 		Common:              commonDefinitions,
@@ -71,12 +69,9 @@ include:
   metrics:
     - "*"
 `
-	f, err := os.CreateTemp("", "cassandra_config.yml")
-	require.NoError(t, err)
 
-	defer func() {
-		assert.NoError(t, os.Remove(f.Name()))
-	}()
+	f, err := os.CreateTemp(t.TempDir(), "cassandra_config.yml")
+	require.NoError(t, err)
 
 	_, err = f.WriteString(configYAML)
 	require.NoError(t, err)
@@ -90,7 +85,8 @@ include:
 	config, err := LoadConfig()
 	assert.NoError(t, err)
 
-	definitions := GetDefinitions().FilterDefinitions(config)
+	definitions := NewDefinitions()
+	definitions.FilterDefinitions(config)
 
 	expected := Definitions{
 		Common:              commonDefinitions,
@@ -112,12 +108,8 @@ include:
     - db.tombstoneScannedHistogram999thPercentile
 `
 
-	f, err := os.CreateTemp("", "cassandra_config.yml")
+	f, err := os.CreateTemp(t.TempDir(), "cassandra_config.yml")
 	require.NoError(t, err)
-
-	defer func() {
-		assert.NoError(t, os.Remove(f.Name()))
-	}()
 
 	_, err = f.WriteString(configYAML)
 	require.NoError(t, err)
@@ -129,7 +121,8 @@ include:
 	config, err := LoadConfig()
 	assert.NoError(t, err)
 
-	definitions := GetDefinitions().FilterDefinitions(config)
+	definitions := NewDefinitions()
+	definitions.FilterDefinitions(config)
 
 	expected := Definitions{
 		Common: commonDefinitions,

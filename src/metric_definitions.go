@@ -18,18 +18,25 @@ type Definitions struct {
 	ColumnFamilyMetrics []Query `yaml:"column_family_metrics"`
 }
 
-// FilterDefinitions filters the definitions of the metrics that have to be collected based on received config.
-func (d Definitions) FilterDefinitions(config Config) Definitions {
-	// Empty config, nothing to filter.
-	if reflect.DeepEqual(config, Config{}) {
-		return d
-	}
-
+// NewDefinitions returns the definitions of the metrics that have to be collected.
+// If extra filtering configuration is provided by the agent, that will be applied to filter the result.
+func NewDefinitions() Definitions {
 	return Definitions{
 		Common:              commonDefinitions,
-		Metrics:             filterQueries(d.Metrics, config),
-		ColumnFamilyMetrics: filterQueries(d.ColumnFamilyMetrics, config),
+		Metrics:             metricDefinitions,
+		ColumnFamilyMetrics: columnFamilyDefinitions,
 	}
+}
+
+// FilterDefinitions filters the definitions of the metrics that have to be collected based on received config.
+func (d *Definitions) FilterDefinitions(config Config) {
+	// Empty config, nothing to filter.
+	if reflect.DeepEqual(config, Config{}) {
+		return
+	}
+
+	d.Metrics = filterQueries(d.Metrics, config)
+	d.ColumnFamilyMetrics = filterQueries(d.ColumnFamilyMetrics, config)
 }
 
 func filterQueries(queries []Query, config Config) []Query {
@@ -40,9 +47,10 @@ func filterQueries(queries []Query, config Config) []Query {
 		query.Attributes = []Attribute{}
 
 		for _, attribute := range attributes {
-			if config.BypassFiltering(attribute) {
-				query.Attributes = append(query.Attributes, attribute)
+			if config.IsFiltered(attribute) {
+				continue
 			}
+			query.Attributes = append(query.Attributes, attribute)
 		}
 
 		if len(query.Attributes) > 0 {
@@ -50,16 +58,6 @@ func filterQueries(queries []Query, config Config) []Query {
 		}
 	}
 	return result
-}
-
-// GetDefinitions returns the definitions of the metrics that have to be collected.
-// If extra filtering configuration is provided by the agent, that will be applied to filter the result.
-func GetDefinitions() Definitions {
-	return Definitions{
-		Common:              commonDefinitions,
-		Metrics:             metricDefinitions,
-		ColumnFamilyMetrics: columnFamilyDefinitions,
-	}
 }
 
 // commonDefinitions are metric definitions that are common for both CassandraColumnFamilySample and CassandraSample.

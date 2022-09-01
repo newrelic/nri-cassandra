@@ -104,7 +104,7 @@ func main() {
 
 // runMetricCollection will perform the metrics collection.
 func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) error {
-	definitions := GetDefinitions()
+	definitions := NewDefinitions()
 
 	config, err := LoadConfig()
 	if err != nil {
@@ -112,7 +112,7 @@ func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) er
 		log.Debug(
 			"no extra configuration loaded: %v", err)
 	} else {
-		definitions = definitions.FilterDefinitions(config)
+		definitions.FilterDefinitions(config)
 	}
 
 	if args.LongRunning {

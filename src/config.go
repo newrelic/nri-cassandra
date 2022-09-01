@@ -41,10 +41,10 @@ func (f QueryFilterConfig) match(attribute Attribute) bool {
 	return false
 }
 
-// BypassFiltering returns true if query is not filtered by the configuration.
+// IsFiltered returns true if query is filtered by the configuration.
 // Include filters have precedence over Exclude filters.
-func (f Config) BypassFiltering(attribute Attribute) bool {
-	return !f.Exclude.match(attribute) || f.Include.match(attribute)
+func (f Config) IsFiltered(attribute Attribute) bool {
+	return f.Exclude.match(attribute) && !f.Include.match(attribute)
 }
 
 // LoadConfig will check if the configPathEnv file variable is set and will try to
