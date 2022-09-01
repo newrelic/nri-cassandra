@@ -108,13 +108,10 @@ func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) er
 
 	config, err := LoadConfig()
 	if err != nil {
-		// Not a fatal error.
-		log.Debug(
-			"no extra configuration loaded: %v", err)
-	} else {
-		definitions.Filter(config)
+		return fmt.Errorf("failed to load configuration, error: %w", err)
 	}
-
+	definitions.Filter(config)
+	
 	if args.LongRunning {
 		return collectMetricsEachInterval(i, jmxClient, definitions)
 	}

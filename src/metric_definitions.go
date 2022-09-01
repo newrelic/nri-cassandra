@@ -35,6 +35,7 @@ func (d *Definitions) Filter(config Config) {
 		return
 	}
 
+	d.Common = filterQueries(d.Common, config)
 	d.Metrics = filterQueries(d.Metrics, config)
 	d.ColumnFamilyMetrics = filterQueries(d.ColumnFamilyMetrics, config)
 }
