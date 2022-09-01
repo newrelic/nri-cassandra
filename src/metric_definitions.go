@@ -28,8 +28,8 @@ func NewDefinitions() Definitions {
 	}
 }
 
-// FilterDefinitions filters the definitions of the metrics that have to be collected based on received config.
-func (d *Definitions) FilterDefinitions(config Config) {
+// Filter filters the definitions of the metrics that have to be collected based on received config.
+func (d *Definitions) Filter(config Config) {
 	// Empty config, nothing to filter.
 	if reflect.DeepEqual(config, Config{}) {
 		return

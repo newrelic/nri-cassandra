@@ -36,7 +36,7 @@ exclude:
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
-	definitions.FilterDefinitions(config)
+	definitions.Filter(config)
 
 	expected := Definitions{
 		Common: commonDefinitions,
@@ -50,7 +50,7 @@ func TestWithoutFilteringConfig(t *testing.T) {
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
-	definitions.FilterDefinitions(config)
+	definitions.Filter(config)
 
 	expected := Definitions{
 		Common:              commonDefinitions,
@@ -86,7 +86,7 @@ include:
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
-	definitions.FilterDefinitions(config)
+	definitions.Filter(config)
 
 	expected := Definitions{
 		Common:              commonDefinitions,
@@ -122,7 +122,7 @@ include:
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
-	definitions.FilterDefinitions(config)
+	definitions.Filter(config)
 
 	expected := Definitions{
 		Common: commonDefinitions,

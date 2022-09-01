@@ -112,7 +112,7 @@ func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) er
 		log.Debug(
 			"no extra configuration loaded: %v", err)
 	} else {
-		definitions.FilterDefinitions(config)
+		definitions.Filter(config)
 	}
 
 	if args.LongRunning {
