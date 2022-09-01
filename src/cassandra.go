@@ -106,13 +106,10 @@ func main() {
 func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) error {
 	definitions := NewDefinitions()
 
-	// Extra configuration will be enabled just when "metrics" mode is
-	// explicitly set to avoid colliding with inventory CONFIG_PATH.
-	if args.Metrics {
-		config, err := LoadConfig()
-		if err != nil {
-			return fmt.Errorf("failed to load configuration, error: %w", err)
-		}
+	config, err := LoadConfig()
+	if err != nil {
+		return fmt.Errorf("failed to load configuration, error: %w", err)
+	} else {
 		definitions.Filter(config)
 	}
 

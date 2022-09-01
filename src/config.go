@@ -15,7 +15,7 @@ import (
 const (
 	// configPathEnv is the environment variable used by the infrastructure-agent to pass extra configuration
 	// to integrations.
-	configPathEnv = "CONFIG_PATH"
+	configPathEnv = "OHI_CONFIG_PATH"
 )
 
 // Config is the extra configuration that can be received by nri-cassandra from infrastructure agent.
