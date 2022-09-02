@@ -6,33 +6,19 @@
 package main
 
 import (
-	"os"
+	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"testing"
 
-	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestExcludeWildcard(t *testing.T) {
 	configYAML := `
 exclude:
-  metrics:
-    - "*"
+  - "*"
 `
-	f, err := os.CreateTemp(t.TempDir(), "cassandra_config.yml")
-	require.NoError(t, err)
 
-	_, err = f.WriteString(configYAML)
-	require.NoError(t, err)
-
-	err = f.Close()
-	assert.NoError(t, err)
-
-	os.Setenv(configPathEnv, f.Name())
-	defer os.Unsetenv(configPathEnv)
-
-	config, err := LoadConfig()
+	config, err := LoadFilteringConfig(configYAML)
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
@@ -44,7 +30,8 @@ exclude:
 }
 
 func TestWithoutFilteringConfig(t *testing.T) {
-	config, err := LoadConfig()
+	emptyCfg := ""
+	config, err := LoadFilteringConfig(emptyCfg)
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
@@ -61,26 +48,12 @@ func TestWithoutFilteringConfig(t *testing.T) {
 func TestIncludeWildcard(t *testing.T) {
 	configYAML := `
 exclude:
-  metrics:
-    - "*"
+  - "*"
 include:
-  metrics:
-    - "*"
+  - "*"
 `
 
-	f, err := os.CreateTemp(t.TempDir(), "cassandra_config.yml")
-	require.NoError(t, err)
-
-	_, err = f.WriteString(configYAML)
-	require.NoError(t, err)
-
-	err = f.Close()
-	assert.NoError(t, err)
-
-	os.Setenv(configPathEnv, f.Name())
-	defer os.Unsetenv(configPathEnv)
-
-	config, err := LoadConfig()
+	config, err := LoadFilteringConfig(configYAML)
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()
@@ -97,26 +70,14 @@ include:
 func TestIncludeMetric(t *testing.T) {
 	configYAML := `
 exclude:
-  metrics:
-    - "*"
+  - "*"
 include:
-  metrics:
-    - client.connectedNativeClients
-    - db.droppedRangeSliceMessagesPerSecond
-    - db.tombstoneScannedHistogram999thPercentile
+  - client.connectedNativeClients
+  - db.droppedRangeSliceMessagesPerSecond
+  - db.tombstoneScannedHistogram999thPercentile
 `
 
-	f, err := os.CreateTemp(t.TempDir(), "cassandra_config.yml")
-	require.NoError(t, err)
-
-	_, err = f.WriteString(configYAML)
-	require.NoError(t, err)
-	assert.NoError(t, f.Close())
-
-	os.Setenv(configPathEnv, f.Name())
-	defer os.Unsetenv(configPathEnv)
-
-	config, err := LoadConfig()
+	config, err := LoadFilteringConfig(configYAML)
 	assert.NoError(t, err)
 
 	definitions := NewDefinitions()

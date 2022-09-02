@@ -41,6 +41,7 @@ type argumentList struct {
 	LongRunning         bool   `default:"false" help:"BETA: In long-running mode integration process will be kept alive"`
 	HeartbeatInterval   int    `default:"5" help:"BETA: Interval in seconds for submitting the heartbeat while in long-running mode"`
 	Interval            int    `default:"30" help:"BETA: Interval in seconds for collecting data while while in long-running mode"`
+	MetricsFilter       string `default:"" help:"BETA: Filtering rules for metrics collection"`
 	EnableInternalStats bool   `default:"false" help:"Print nrjmx internal query stats for troubleshooting"`
 }
 
@@ -106,9 +107,9 @@ func main() {
 func runMetricCollection(i *integration.Integration, jmxClient *gojmx.Client) error {
 	definitions := NewDefinitions()
 
-	config, err := LoadConfig()
+	config, err := LoadFilteringConfig(args.MetricsFilter)
 	if err != nil {
-		return fmt.Errorf("failed to load configuration, error: %w", err)
+		return fmt.Errorf("failed to load metrics filtering configuration, error: %w", err)
 	}
 	definitions.Filter(config)
 
@@ -258,7 +259,7 @@ func openJMXConnection() (*gojmx.Client, error) {
 		// However, in long-running mode, we can recover later from errors related with connection, except JMXClient error
 		// which means that the nrjmx java sub-process was closed.
 		if _, ok := gojmx.IsJMXClientError(err); ok || !args.LongRunning {
-			return nil, fmt.Errorf("failed to open JMX connection, error: %w, Config: (%s)",
+			return nil, fmt.Errorf("failed to open JMX connection, error: %w, FilteringConfig: (%s)",
 				err,
 				formattedConfig,
 			)

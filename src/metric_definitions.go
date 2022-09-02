@@ -28,10 +28,10 @@ func NewDefinitions() Definitions {
 	}
 }
 
-// Filter filters the definitions of the metrics that have to be collected based on received config.
-func (d *Definitions) Filter(config Config) {
+// MetricNameList filters the definitions of the metrics that have to be collected based on received config.
+func (d *Definitions) Filter(config FilteringConfig) {
 	// Empty config, nothing to filter.
-	if reflect.DeepEqual(config, Config{}) {
+	if reflect.DeepEqual(config, FilteringConfig{}) {
 		return
 	}
 
@@ -40,9 +40,9 @@ func (d *Definitions) Filter(config Config) {
 	d.ColumnFamilyMetrics = filterQueries(d.ColumnFamilyMetrics, config)
 }
 
-func filterQueries(queries []Query, config Config) []Query {
+func filterQueries(queries []Query, config FilteringConfig) []Query {
 	var result []Query
-	// Filter Metric Definitions specified in config.
+	// MetricNameList Metric Definitions specified in config.
 	for _, query := range queries {
 		attributes := query.Attributes
 		query.Attributes = []Attribute{}
