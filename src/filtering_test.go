@@ -6,8 +6,9 @@
 package main
 
 import (
-	"github.com/newrelic/infra-integrations-sdk/data/metric"
 	"testing"
+
+	"github.com/newrelic/infra-integrations-sdk/data/metric"
 
 	"github.com/stretchr/testify/assert"
 )
