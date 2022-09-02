@@ -22,7 +22,7 @@ var (
 	// percentileRegex is used to detect percentile mBean attributes.
 	percentileRegex = regexp.MustCompile("attr=.*Percentile")
 
-	// filteredKeyspace set used to contains internal keyspace that should not be reported.
+	// filteredKeyspace set used to match internal keyspace that should not be reported.
 	filteredKeyspace = map[string]struct{}{
 		"OpsCenter":          {},
 		"system":             {},

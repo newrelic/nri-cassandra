@@ -22,14 +22,14 @@ func (f FilteringConfig) IsFiltered(attribute Attribute) bool {
 }
 
 // LoadFilteringConfig unmarshal the YAML format filtering configuration.
-func LoadFilteringConfig(metricsCfg string) (FilteringConfig, error) {
+func LoadFilteringConfig(cfg string) (FilteringConfig, error) {
 	result := FilteringConfig{}
 
-	if metricsCfg == "" {
+	if cfg == "" {
 		return result, nil
 	}
 
-	err := yaml.Unmarshal([]byte(metricsCfg), &result)
+	err := yaml.Unmarshal([]byte(cfg), &result)
 	return result, err
 }
 

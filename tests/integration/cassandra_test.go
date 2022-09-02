@@ -102,6 +102,17 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
 			},
 			schemaFile: "cassandra-schema-inventory.json",
 		},
+		{
+			name: "InvalidConfigPath_NonExistingFile_OnlyMetrics",
+			config: map[string]string{
+				"CONFIG_PATH":     "/nonExisting.yaml",
+				"METRICS":         "true",
+				"HOSTNAME":        testutils.Hostname,
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			},
+			schemaFile: "cassandra-schema-metrics.json",
+		},
 	}
 
 	for _, testCase := range testCases {
