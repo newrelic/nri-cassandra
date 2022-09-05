@@ -259,7 +259,7 @@ func openJMXConnection() (*gojmx.Client, error) {
 		// However, in long-running mode, we can recover later from errors related with connection, except JMXClient error
 		// which means that the nrjmx java sub-process was closed.
 		if _, ok := gojmx.IsJMXClientError(err); ok || !args.LongRunning {
-			return nil, fmt.Errorf("failed to open JMX connection, error: %w, FilteringConfig: (%s)",
+			return nil, fmt.Errorf("failed to open JMX connection, error: %w, Config: (%s)",
 				err,
 				formattedConfig,
 			)
