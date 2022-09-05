@@ -28,7 +28,7 @@ func NewDefinitions() Definitions {
 	}
 }
 
-// MetricNameList filters the definitions of the metrics that have to be collected based on received config.
+// Filter the definitions of the metrics that have to be collected based on received config.
 func (d *Definitions) Filter(config FilteringConfig) {
 	// Empty config, nothing to filter.
 	if reflect.DeepEqual(config, FilteringConfig{}) {
