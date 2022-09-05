@@ -5,7 +5,61 @@
 
 package main
 
-import "github.com/newrelic/infra-integrations-sdk/data/metric"
+import (
+	"reflect"
+
+	"github.com/newrelic/infra-integrations-sdk/data/metric"
+)
+
+// Definitions struct will contain the metrics that have to be collected.
+type Definitions struct {
+	Common              []Query `yaml:"common"`
+	Metrics             []Query `yaml:"metrics"`
+	ColumnFamilyMetrics []Query `yaml:"column_family_metrics"`
+}
+
+// NewDefinitions returns the definitions of the metrics that have to be collected.
+// If extra filtering configuration is provided by the agent, that will be applied to filter the result.
+func NewDefinitions() Definitions {
+	return Definitions{
+		Common:              commonDefinitions,
+		Metrics:             metricDefinitions,
+		ColumnFamilyMetrics: columnFamilyDefinitions,
+	}
+}
+
+// Filter the definitions of the metrics that have to be collected based on received config.
+func (d *Definitions) Filter(config FilteringConfig) {
+	// Empty config, nothing to filter.
+	if reflect.DeepEqual(config, FilteringConfig{}) {
+		return
+	}
+
+	d.Common = filterQueries(d.Common, config)
+	d.Metrics = filterQueries(d.Metrics, config)
+	d.ColumnFamilyMetrics = filterQueries(d.ColumnFamilyMetrics, config)
+}
+
+func filterQueries(queries []Query, config FilteringConfig) []Query {
+	var result []Query
+	// MetricNameList Metric Definitions specified in config.
+	for _, query := range queries {
+		attributes := query.Attributes
+		query.Attributes = []Attribute{}
+
+		for _, attribute := range attributes {
+			if config.IsFiltered(attribute) {
+				continue
+			}
+			query.Attributes = append(query.Attributes, attribute)
+		}
+
+		if len(query.Attributes) > 0 {
+			result = append(result, query)
+		}
+	}
+	return result
+}
 
 // commonDefinitions are metric definitions that are common for both CassandraColumnFamilySample and CassandraSample.
 var commonDefinitions = []Query{
