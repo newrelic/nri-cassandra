@@ -205,7 +205,7 @@ func populateMetrics(s *metric.Set, metrics map[string]interface{}, queryConfig 
 func populateAttributes(s *metric.Set, metrics map[string]interface{}, sampleAttributes []SampleAttribute) {
 	for _, sampleAttr := range sampleAttributes {
 		rawMetric, found := metrics[sampleAttr.Key]
-		if found {
+		if !found {
 			log.Debug("Can't find raw metrics in results for attribute: %s", sampleAttr.Key)
 			continue
 		}
