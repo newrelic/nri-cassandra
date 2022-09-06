@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.11.0 (2022-09-06)
+### Changed
+- Updated gojmx library to [v2.2.2](https://github.com/newrelic/nrjmx/releases/tag/v2.2.2)
+- Optimisation of number of JMX queries by removing wildcards when possible and fetching only the required attributes.
+### Added
+- `ENABLE_INTERNAL_STATS` configuration option. When this option is enabled and the integration is running in verbose mode it will output in the logs nrjmx internal query statistics. This will be handy when troubleshooting performance issues.
+- [BETA] Added long-running mode (LONG_RUNNING config option). When running in this mode the RMI connection will be reused instead of creating a new one every collection.
+- [BETA] Added MBean filtering configuration.
+```yaml
+METRICS_FILTER: >-
+  exclude:
+    - "*"
+  include:
+    - client.connectedNativeClients
+    - db.droppedRangeSliceMessagesPerSecond
+    - db.tombstoneScannedHistogram999thPercentile
+```
+
+### Fixed
+- Issue when JMX connection is opened unnecessarily in Inventory collection mode.
+
 ## 2.10.2 (2022-06-10)
 ### Changed
 - Use Go 1.18 to compile the integration
