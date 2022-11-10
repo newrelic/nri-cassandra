@@ -1,11 +1,11 @@
 module github.com/newrelic/nri-cassandra
 
-go 1.18
+go 1.19
 
 require (
 	github.com/google/uuid v1.3.0
 	github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible
-	github.com/newrelic/nrjmx/gojmx v0.0.0-20220831103627-56d00601006c
+	github.com/newrelic/nrjmx/gojmx v0.0.0-20230227151439-e482f2725493
 	github.com/stretchr/testify v1.8.2
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -17,7 +17,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/Microsoft/hcsshim v0.9.4 // indirect
-	github.com/apache/thrift v0.16.0 // indirect
+	github.com/apache/thrift v0.18.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/containerd/cgroups v1.0.4 // indirect
 	github.com/containerd/containerd v1.6.8 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9 // indirect
