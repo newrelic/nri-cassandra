@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 2.11.0 (2022-11-10)
 ### Changed
-- Updated gojmx library to [v2.3.1](https://github.com/newrelic/nrjmx/releases/tag/v2.3.1)
+- Updated gojmx library to [v2.3.2](https://github.com/newrelic/nrjmx/releases/tag/v2.3.2)
 
 ## 2.11.0 (2022-09-06)
 ### Changed
