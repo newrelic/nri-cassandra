@@ -1060,5 +1060,4 @@ var metricDefinitions = []Query{
 			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestTotalBlockedTasks", MetricType: metric.GAUGE},
 		},
 	},
-
 }
