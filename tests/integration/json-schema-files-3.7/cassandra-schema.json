@@ -821,7 +821,7 @@
           ],
           "type": "object"
         },
-        "start_org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=TotalBlockedTasks_transport": {
+        "start_native_transport": {
           "properties": {
             "value": {
               "type": "boolean"
