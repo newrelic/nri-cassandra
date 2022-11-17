@@ -821,7 +821,7 @@
           ],
           "type": "object"
         },
-        "start_native_transport": {
+        "start_org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=TotalBlockedTasks_transport": {
           "properties": {
             "value": {
               "type": "boolean"
@@ -1564,11 +1564,6 @@
             "db.threadpool.internalValidationExecutorCompletedTasks",
             "db.threadpool.internalValidationExecutorCurrentlyBlockedTasks",
             "db.threadpool.internalValidationExecutorPendingTasks",
-            "db.threadpool.nativeTransportRequestActiveTasks",
-            "db.threadpool.nativeTransportRequestCompletedTasks",
-            "db.threadpool.nativeTransportRequestCurrentlyBlockedTasks",
-            "db.threadpool.nativeTransportRequestPendingTasks",
-            "db.threadpool.nativeTransportRequestTotalBlockedTasks",
             "db.threadpool.requestCounterMutationStageActiveTasks",
             "db.threadpool.requestCounterMutationStageCompletedTasks",
             "db.threadpool.requestCounterMutationStageCurrentlyBlockedTasks",
