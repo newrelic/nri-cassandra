@@ -841,7 +841,7 @@ var metricDefinitions = []Query{
 	{
 		MBean: "org.apache.cassandra.metrics:type=CommitLog,name=PendingTasks",
 		Attributes: []Attribute{
-			{MBeanAttribute: "Value", Alias: "db.commitLogPendindTasks", MetricType: metric.GAUGE},
+			{MBeanAttribute: "Value", Alias: "db.commitLogPendingTasks", MetricType: metric.GAUGE},
 		},
 	},
 	{

@@ -53,7 +53,7 @@
                   "db.commitLogCompletedTasksPerSecond": {
                     "type": "number"
                   },
-                  "db.commitLogPendindTasks": {
+                  "db.commitLogPendingTasks": {
                     "type": "number"
                   },
                   "db.commitLogTotalSizeBytes": {
@@ -476,7 +476,7 @@
                   "db.allMemtablesOffHeapSizeBytes",
                   "db.allMemtablesOnHeapSizeBytes",
                   "db.commitLogCompletedTasksPerSecond",
-                  "db.commitLogPendindTasks",
+                  "db.commitLogPendingTasks",
                   "db.commitLogTotalSizeBytes",
                   "db.droppedBatchRemoveMessagesPerSecond",
                   "db.droppedBatchStoreMessagesPerSecond",
