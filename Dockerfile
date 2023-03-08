@@ -1,4 +1,4 @@
-FROM golang:1.10 as builder-cassandra
+FROM golang:1.19-buster as builder-cassandra
 COPY . /go/src/github.com/newrelic/nri-cassandra/
 RUN cd /go/src/github.com/newrelic/nri-cassandra && \
     make && \
@@ -18,4 +18,3 @@ COPY --from=builder-jmx /nrjmx/bin /usr/bin/
 
 RUN apk update && apk add openjdk8-jre
 USER 1000
-
