@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.12.0 (2023-03-08)
+### Changed
+- Updated gojmx library to [v2.3.2](https://github.com/newrelic/nrjmx/releases/tag/v2.3.2)
+- Upgraded Go version to 1.19
+- General upgrade of all dependencies
+
 ## 2.11.0 (2022-09-06)
 ### Changed
 - Updated gojmx library to [v2.2.2](https://github.com/newrelic/nrjmx/releases/tag/v2.2.2)
