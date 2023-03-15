@@ -72,11 +72,6 @@ jobs:
     needs: [test-nix, test-windows, test-integration-nix]
     steps:
       - uses: actions/checkout@v3
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.OHAI_DOCKER_HUB_ID }}
-          password: ${{ secrets.OHAI_DOCKER_HUB_PASSWORD }}
       - name: Pre release
         run: make ci/prerelease
         env:
@@ -120,14 +115,12 @@ jobs:
       - name: Get PFX certificate from GH secrets
         shell: bash
         run: printf "%s" "$PFX_CERTIFICATE_BASE64" | base64 -d - > wincert.pfx
-      - name: Download zip from GH Release assets and extract .exe
+      - name: Download zip from GH Release assets, extract .exe and download dependencies
         shell: pwsh
         run: |
           build\windows\download_zip.ps1 "$env:INTEGRATION" ${{ matrix.goarch }} "$env:TAG" "$env:REPO_FULL_NAME"
           build\windows\extract_exe.ps1 "$env:INTEGRATION" ${{ matrix.goarch }} "$env:TAG"
-      - name: Download nrjmx
-        shell: bash
-        run: build/windows/download_nrjmx.sh
+          build\windows\download_nrjmx.sh
       - name: Create MSI
         shell: pwsh
         run: build\windows\package_msi.ps1 -integration "$env:INTEGRATION" -arch ${{ matrix.goarch }} -tag "$env:TAG" -pfx_passphrase "$env:PFX_PASSPHRASE" -pfx_certificate_description "$env:PFX_CERTIFICATE_DESCRIPTION"
@@ -156,11 +149,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [package-win]
     steps:
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.OHAI_DOCKER_HUB_ID }}
-          password: ${{ secrets.OHAI_DOCKER_HUB_PASSWORD }}
       - name: Publish to S3 action
         uses: newrelic/infrastructure-publish-action@v1
         env:

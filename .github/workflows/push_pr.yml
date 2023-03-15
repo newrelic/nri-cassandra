@@ -144,7 +144,11 @@ jobs:
           fi
       - name: Extract .exe
         shell: pwsh
-        run: build\windows\extract_exe.ps1 "$env:INTEGRATION" ${{ matrix.goarch }} "$env:TAG"
+        run: |
+          build\windows\extract_exe.ps1 "$env:INTEGRATION" ${{ matrix.goarch }} "$env:TAG"
+      - name: Download nrjmx
+        shell: bash
+        run: build/windows/download_nrjmx.sh
       - name: Create MSI
         shell: pwsh
         run: build\windows\package_msi.ps1 -integration "$env:INTEGRATION" -arch ${{ matrix.goarch }} -tag "$env:TAG" -pfx_passphrase "$env:PFX_PASSPHRASE" -pfx_certificate_description "$env:PFX_CERTIFICATE_DESCRIPTION"
