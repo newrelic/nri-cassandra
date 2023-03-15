@@ -73,7 +73,7 @@ cp "build\package\windows\nri-$arch-installer\bin\Release\nri-$integration-$arch
 echo "===> Building nrjmx bundle"
 Push-Location -Path "build\package\windows\bundle"
 
-. $msBuild/MSBuild.exe bundle.wixproj /p:IntegrationVersion=${version} /p:IntegrationName=$integration /p:Year=$buildYear /p:pfx_certificate_description=$pfx_certificate_description
+. $msBuild/MSBuild.exe bundle.wixproj /p:IntegrationVersion=${version} /p:IntegrationName=$integration /p:Year=$buildYear /p:NoSign=$noSign /p:pfx_certificate_description=$pfx_certificate_description
 
 if (-not $?)
 {
