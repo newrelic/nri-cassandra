@@ -305,6 +305,21 @@
                   "db.threadpool.internalValidationExecutorPendingTasks": {
                     "type": "number"
                   },
+                  "db.threadpool.nativeTransportRequestActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestTotalBlockedTasks": {
+                    "type": "number"
+                  },
                   "db.threadpool.requestCounterMutationStageActiveTasks": {
                     "type": "number"
                   },

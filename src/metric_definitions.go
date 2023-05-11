@@ -1030,4 +1030,34 @@ var metricDefinitions = []Query{
 			{MBeanAttribute: "Count", Alias: "db.threadpool.internalMiscStageCurrentlyBlockedTasks", MetricType: metric.GAUGE},
 		},
 	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=ActiveTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestActiveTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=CompletedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestCompletedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=CurrentlyBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestCurrentlyBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=PendingTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestPendingTasks", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=TotalBlockedTasks",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestTotalBlockedTasks", MetricType: metric.GAUGE},
+		},
+	},
 }
