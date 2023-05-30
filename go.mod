@@ -6,7 +6,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/newrelic/infra-integrations-sdk v3.7.3+incompatible
 	github.com/newrelic/nrjmx/gojmx v0.0.0-20230227151439-e482f2725493
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.15.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
