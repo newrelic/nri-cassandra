@@ -11,16 +11,16 @@ package integration
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/newrelic/nri-cassandra/tests/integration/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/testcontainers/testcontainers-go"
-	"path/filepath"
-	"strings"
-	"testing"
-	"time"
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 
 type CassandraSSLTestSuite struct {
 	suite.Suite
-	compose *testcontainers.LocalDockerCompose
+	composeCancCtx context.CancelFunc
 }
 
 func TestCassandraSSLTestSuite(t *testing.T) {
@@ -37,18 +37,17 @@ func TestCassandraSSLTestSuite(t *testing.T) {
 }
 
 func (s *CassandraSSLTestSuite) SetupSuite() {
-	s.compose = testutils.ConfigureSSLCassandraDockerCompose()
-
-	err := testutils.RunDockerCompose(s.compose)
+	ctx, cancel := context.WithCancel(context.Background())
+	s.composeCancCtx = cancel
+	err := testutils.ConfigureSSLCassandraDockerCompose(ctx)
 	require.NoError(s.T(), err)
 
-	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
 	s.T().Log("Wait for cassandra to initialize...")
-	time.Sleep(30 * time.Second)
+	time.Sleep(60 * time.Second)
 }
 
 func (s *CassandraSSLTestSuite) TearDownSuite() {
-	s.compose.Down()
+	s.composeCancCtx()
 }
 
 func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {

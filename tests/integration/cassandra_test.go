@@ -21,7 +21,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/testcontainers/testcontainers-go"
 )
 
 const (
@@ -35,7 +34,7 @@ const (
 
 type CassandraTestSuite struct {
 	suite.Suite
-	compose *testcontainers.LocalDockerCompose
+	composeCancCtx context.CancelFunc
 }
 
 func TestCassandraTestSuite(t *testing.T) {
@@ -43,18 +42,19 @@ func TestCassandraTestSuite(t *testing.T) {
 }
 
 func (s *CassandraTestSuite) SetupSuite() {
-	s.compose = testutils.ConfigureCassandraDockerCompose()
+	ctx, cancel := context.WithCancel(context.Background())
+	s.composeCancCtx = cancel
+	err := testutils.ConfigureCassandraDockerCompose(ctx)
 
-	err := testutils.RunDockerCompose(s.compose)
 	require.NoError(s.T(), err)
 
 	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
 	s.T().Log("Wait for cassandra to initialize...")
-	time.Sleep(30 * time.Second)
+	time.Sleep(60 * time.Second)
 }
 
 func (s *CassandraTestSuite) TearDownSuite() {
-	s.compose.Down()
+	s.composeCancCtx()
 }
 
 func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
