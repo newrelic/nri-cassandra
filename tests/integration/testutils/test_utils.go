@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"io"
 	"os"
 	"os/exec"
@@ -22,10 +21,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/newrelic/nri-cassandra/tests/integration/jsonschema"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
 )
 
 const (
@@ -178,57 +175,79 @@ func RunDockerCommandForContainer(t *testing.T, command, containerName string) e
 	return nil
 }
 
-// RunDockerCompose runs the docker-compose object.
-func RunDockerCompose(compose *testcontainers.LocalDockerCompose) error {
-	execError := compose.Invoke()
-	err := execError.Error
-	if err != nil {
-		return fmt.Errorf("failed to run docker-compose: error: %w", err)
+func isComposeReady(cxt context.Context) bool {
+	for {
+		errIntegration := exec.Command("docker", "exec", "-i", "integration_nri-cassandra_1", "ls").Run()
+		errCassandra := exec.Command("docker", "exec", "-i", "integration_cassandra_1", "ls").Run()
+
+		if errIntegration == nil && errCassandra == nil {
+			return true
+		}
+
+		select {
+		case <-cxt.Done():
+			return false
+		default:
+			time.Sleep(10 * time.Second)
+		}
+
 	}
-	return nil
 }
 
 // ConfigureCassandraDockerCompose prepares the Cassandra integration test docker-compose.
-func ConfigureCassandraDockerCompose() *testcontainers.LocalDockerCompose {
-	identifier := strings.ToLower(uuid.New().String())
+func ConfigureCassandraDockerCompose(ctx context.Context) error {
+	composeFilePaths := filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")
 
-	composeFilePaths := []string{filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")}
+	args := []string{"-f", composeFilePaths, "up", "-d", "--build"}
+	cmd := exec.CommandContext(ctx, "docker-compose", args...)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("EXTRA_JVM_OPTS=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", Hostname))
 
-	compose := testcontainers.NewLocalDockerCompose(composeFilePaths, identifier)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 
-	compose.WithCommand([]string{"up", "-d", "--build"}).
-		WithEnv(map[string]string{
-			"EXTRA_JVM_OPTS": "-Dcom.sun.management.jmxremote.authenticate=false " +
-				fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname) +
-				"-Dcom.sun.management.jmxremote=true ",
-		})
+	err := cmd.Start()
+	if err != nil {
+		return fmt.Errorf("failed to run docker-compose: error: %w", err)
+	}
 
-	return compose
+	if !isComposeReady(ctx) {
+		return fmt.Errorf("failed to run docker-compose: it has not reached a ready state")
+	}
+
+	return nil
 }
 
 // ConfigureSSLCassandraDockerCompose prepares the Cassandra integration test docker-compose run with SSL JMX.
-func ConfigureSSLCassandraDockerCompose() *testcontainers.LocalDockerCompose {
-	identifier := strings.ToLower(uuid.New().String())
+func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
+	composeFilePaths := filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")
 
-	composeFilePaths := []string{filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")}
+	args := []string{"-f", composeFilePaths, "up", "-d", "--build"}
+	cmd := exec.CommandContext(ctx, "docker-compose", args...)
+	cmd.Env = append(os.Environ(), "EXTRA_JVM_OPTS= -Dcom.sun.management.jmxremote.authenticate=true "+
+		fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname)+
+		"-Dcom.sun.management.jmxremote.ssl=true "+
+		"-Dcom.sun.management.jmxremote.ssl.need.client.auth=true "+
+		"-Dcom.sun.management.jmxremote.registry.ssl=true "+
+		"-Dcom.sun.management.jmxremote=true "+
+		"-Djavax.net.ssl.keyStore=/opt/cassandra/conf/certs/cassandra.keystore  "+
+		fmt.Sprintf("-Djavax.net.ssl.keyStorePassword=%s ", KeystorePassword)+
+		"-Djavax.net.ssl.trustStore=/opt/cassandra/conf/certs/cassandra.truststore "+
+		fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=%s ", TruststorePassword),
+	)
 
-	compose := testcontainers.NewLocalDockerCompose(composeFilePaths, identifier)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 
-	compose.WithCommand([]string{"up", "-d", "--build"}).
-		WithEnv(map[string]string{
-			"EXTRA_JVM_OPTS": "-Dcom.sun.management.jmxremote.authenticate=true " +
-				fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname) +
-				"-Dcom.sun.management.jmxremote.ssl=true " +
-				"-Dcom.sun.management.jmxremote.ssl.need.client.auth=true " +
-				"-Dcom.sun.management.jmxremote.registry.ssl=true " +
-				"-Dcom.sun.management.jmxremote=true " +
-				"-Djavax.net.ssl.keyStore=/opt/cassandra/conf/certs/cassandra.keystore  " +
-				fmt.Sprintf("-Djavax.net.ssl.keyStorePassword=%s ", KeystorePassword) +
-				"-Djavax.net.ssl.trustStore=/opt/cassandra/conf/certs/cassandra.truststore " +
-				fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=%s ", TruststorePassword),
-		})
+	err := cmd.Start()
+	if err != nil {
+		return fmt.Errorf("failed to run docker-compose: error: %w", err)
+	}
 
-	return compose
+	if !isComposeReady(ctx) {
+		return fmt.Errorf("failed to run docker-compose: it has not reached a ready state")
+	}
+
+	return nil
 }
 
 // AssertReceivedErrors check if at least one the log lines provided contains the given message.

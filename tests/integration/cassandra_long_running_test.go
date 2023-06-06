@@ -20,12 +20,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/testcontainers/testcontainers-go"
 )
 
 type CassandraLongRunningTestSuite struct {
 	suite.Suite
-	compose *testcontainers.LocalDockerCompose
+	cancelComposeCtx context.CancelFunc
 }
 
 func TestCassandraLongRunningTestSuite(t *testing.T) {
@@ -33,18 +32,18 @@ func TestCassandraLongRunningTestSuite(t *testing.T) {
 }
 
 func (s *CassandraLongRunningTestSuite) SetupSuite() {
-	s.compose = testutils.ConfigureCassandraDockerCompose()
-
-	err := testutils.RunDockerCompose(s.compose)
+	ctx, cancel := context.WithCancel(context.Background())
+	s.cancelComposeCtx = cancel
+	err := testutils.ConfigureCassandraDockerCompose(ctx)
 	require.NoError(s.T(), err)
 
-	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
+	// Containers are running, but we want to wait that all mBeans are ready.
 	log.Info("Wait for cassandra to initialize...")
-	time.Sleep(30 * time.Second)
+	time.Sleep(60 * time.Second)
 }
 
 func (s *CassandraLongRunningTestSuite) TearDownSuite() {
-	s.compose.Down()
+	s.cancelComposeCtx()
 }
 
 func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningIntegration() {
