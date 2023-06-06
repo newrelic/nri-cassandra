@@ -29,7 +29,7 @@ const (
 
 type CassandraSSLTestSuite struct {
 	suite.Suite
-	composeCancCtx context.CancelFunc
+	cancelComposeCtx context.CancelFunc
 }
 
 func TestCassandraSSLTestSuite(t *testing.T) {
@@ -38,16 +38,17 @@ func TestCassandraSSLTestSuite(t *testing.T) {
 
 func (s *CassandraSSLTestSuite) SetupSuite() {
 	ctx, cancel := context.WithCancel(context.Background())
-	s.composeCancCtx = cancel
+	s.cancelComposeCtx = cancel
 	err := testutils.ConfigureSSLCassandraDockerCompose(ctx)
 	require.NoError(s.T(), err)
 
+	// Containers are running, but we want to wait that all mBeans are ready.
 	s.T().Log("Wait for cassandra to initialize...")
 	time.Sleep(60 * time.Second)
 }
 
 func (s *CassandraSSLTestSuite) TearDownSuite() {
-	s.composeCancCtx()
+	s.cancelComposeCtx()
 }
 
 func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {

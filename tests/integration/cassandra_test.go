@@ -34,7 +34,7 @@ const (
 
 type CassandraTestSuite struct {
 	suite.Suite
-	composeCancCtx context.CancelFunc
+	cancelComposeCtx context.CancelFunc
 }
 
 func TestCassandraTestSuite(t *testing.T) {
@@ -43,18 +43,18 @@ func TestCassandraTestSuite(t *testing.T) {
 
 func (s *CassandraTestSuite) SetupSuite() {
 	ctx, cancel := context.WithCancel(context.Background())
-	s.composeCancCtx = cancel
+	s.cancelComposeCtx = cancel
 	err := testutils.ConfigureCassandraDockerCompose(ctx)
 
 	require.NoError(s.T(), err)
 
-	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
+	// Containers are running, but we want to wait that all mBeans are ready.
 	s.T().Log("Wait for cassandra to initialize...")
 	time.Sleep(60 * time.Second)
 }
 
 func (s *CassandraTestSuite) TearDownSuite() {
-	s.composeCancCtx()
+	s.cancelComposeCtx()
 }
 
 func (s *CassandraTestSuite) TestCassandraIntegration_Success() {

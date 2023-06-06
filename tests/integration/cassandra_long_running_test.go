@@ -24,7 +24,7 @@ import (
 
 type CassandraLongRunningTestSuite struct {
 	suite.Suite
-	composeCancCtx context.CancelFunc
+	cancelComposeCtx context.CancelFunc
 }
 
 func TestCassandraLongRunningTestSuite(t *testing.T) {
@@ -33,17 +33,17 @@ func TestCassandraLongRunningTestSuite(t *testing.T) {
 
 func (s *CassandraLongRunningTestSuite) SetupSuite() {
 	ctx, cancel := context.WithCancel(context.Background())
-	s.composeCancCtx = cancel
+	s.cancelComposeCtx = cancel
 	err := testutils.ConfigureCassandraDockerCompose(ctx)
 	require.NoError(s.T(), err)
 
-	// Could not rely on testcontainers wait strategies here, as the server might be up but not reporting all mbeans.
+	// Containers are running, but we want to wait that all mBeans are ready.
 	log.Info("Wait for cassandra to initialize...")
 	time.Sleep(60 * time.Second)
 }
 
 func (s *CassandraLongRunningTestSuite) TearDownSuite() {
-	s.composeCancCtx()
+	s.cancelComposeCtx()
 }
 
 func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningIntegration() {
