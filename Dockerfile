@@ -1,4 +1,4 @@
-FROM golang:1.20 as builder-cassandra
+FROM golang:1.20.6 as builder-cassandra
 COPY . /go/src/github.com/newrelic/nri-cassandra/
 RUN cd /go/src/github.com/newrelic/nri-cassandra && \
     make && \
