@@ -1,4 +1,4 @@
-FROM golang:1.20
+FROM golang:1.20.6
 
 ARG GH_VERSION='2.23.0'
 
