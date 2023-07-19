@@ -9,6 +9,11 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+## v2.13.1 - 2023-07-19
+
+### ⛓️ Dependencies
+- Updated golang version to 1.20
+
 ## 2.13.0 (2023-05-11)
 ### Changed
 - Disable CGO
