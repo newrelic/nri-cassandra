@@ -195,6 +195,30 @@ var columnFamilyDefinitions = []Query{
 			{MBeanAttribute: "Value", Alias: "db.minRowSize", MetricType: metric.GAUGE},
 		},
 	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=EstimatedPartitionCount",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.estimatedPartitionCount", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=MeanPartitionSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.meanPartitionSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=MaxPartitionSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.maxPartitionSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
+	{
+		MBean: "org.apache.cassandra.metrics:type=Table,keyspace=*,scope=*,name=MinPartitionSize",
+		Attributes: []Attribute{
+			{MBeanAttribute: "Value", Alias: "db.minPartitionSizeBytes", MetricType: metric.GAUGE},
+		},
+	},
 }
 
 // SampleAttribute is an attributes that make a NR metric-set unique.
