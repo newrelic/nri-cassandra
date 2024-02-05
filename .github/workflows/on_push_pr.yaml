@@ -11,9 +11,10 @@ on:
 
 jobs:
   push-pr:
-    uses: newrelic/coreint-automation/.github/workflows/reusable_push_pr.yaml@feat/fake-prerelease-goarch-matrix # TODO: change to v2
+    uses: newrelic/coreint-automation/.github/workflows/reusable_push_pr.yaml@feat/fake-prerelease-goarch-matrix # TODO: use v2 when new features are ready
     secrets: inherit
     with:
       run_test_build_fake_prerelease: true
       integration: "cassandra"
       fake_prerelease_goarch_matrix: '["amd64"]' # 386 is not supported in jmx integrations
+      fake_prerelease_download_nrjmx: true
