@@ -1,10 +1,10 @@
 module github.com/newrelic/nri-cassandra
 
-go 1.20
+go 1.21.7
 
 require (
 	github.com/newrelic/infra-integrations-sdk v3.8.0+incompatible
-	github.com/newrelic/nrjmx/gojmx v0.0.0-20230328105658-176501e60193
+	github.com/newrelic/nrjmx/gojmx v0.0.0-20230714122532-90d44704c70c
 	github.com/stretchr/testify v1.8.4
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
