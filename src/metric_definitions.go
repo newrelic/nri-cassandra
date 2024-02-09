@@ -1033,13 +1033,13 @@ var metricDefinitions = []Query{
 	{
 		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=ActiveTasks",
 		Attributes: []Attribute{
-			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestActiveTasks", MetricType: metric.GAUGE},
+			{MBeanAttribute: "Value", Alias: "db.threadpool.nativeTransportRequestActiveTasks", MetricType: metric.GAUGE},
 		},
 	},
 	{
 		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=CompletedTasks",
 		Attributes: []Attribute{
-			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestCompletedTasks", MetricType: metric.GAUGE},
+			{MBeanAttribute: "Value", Alias: "db.threadpool.nativeTransportRequestCompletedTasks", MetricType: metric.GAUGE},
 		},
 	},
 	{
@@ -1051,7 +1051,7 @@ var metricDefinitions = []Query{
 	{
 		MBean: "org.apache.cassandra.metrics:type=ThreadPools,path=transport,scope=Native-Transport-Requests,name=PendingTasks",
 		Attributes: []Attribute{
-			{MBeanAttribute: "Count", Alias: "db.threadpool.nativeTransportRequestPendingTasks", MetricType: metric.GAUGE},
+			{MBeanAttribute: "Value", Alias: "db.threadpool.nativeTransportRequestPendingTasks", MetricType: metric.GAUGE},
 		},
 	},
 	{
