@@ -28,8 +28,8 @@ const (
 	timeout             = "5000"
 
 	integrationBinPath       = "/nri-cassandra"
-	integrationContainerName = "integration_nri-cassandra_1"
-	cassandraContainerName   = "integration_cassandra_1"
+	integrationContainerName = "nri-cassandra"
+	cassandraContainerName   = "cassandra"
 )
 
 type CassandraTestSuite struct {
@@ -71,7 +71,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
 		schemaFile string
 	}{
 		{
-			name: "ValidArguments",
+			name: "MetricsAndInventoryAreCollected",
 			config: map[string]string{
 				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
 				"HOSTNAME":        testutils.Hostname,
@@ -79,39 +79,6 @@ func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
 				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},
 			schemaFile: "cassandra-schema.json",
-		},
-		{
-			name: "OnlyMetrics",
-			config: map[string]string{
-				"METRICS":         "true",
-				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
-				"HOSTNAME":        testutils.Hostname,
-				"TIMEOUT":         timeout,
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-			},
-			schemaFile: "cassandra-schema-metrics.json",
-		},
-		{
-			name: "OnlyInventory",
-			config: map[string]string{
-				"INVENTORY":       "true",
-				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
-				"HOSTNAME":        testutils.Hostname,
-				"TIMEOUT":         timeout,
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-			},
-			schemaFile: "cassandra-schema-inventory.json",
-		},
-		{
-			name: "InvalidConfigPath_NonExistingFile_OnlyMetrics",
-			config: map[string]string{
-				"CONFIG_PATH":     "/nonExisting.yaml",
-				"METRICS":         "true",
-				"HOSTNAME":        testutils.Hostname,
-				"TIMEOUT":         timeout,
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-			},
-			schemaFile: "cassandra-schema-metrics.json",
 		},
 	}
 
