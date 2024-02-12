@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased section should follow [Release Toolkit](https://github.com/newrelic/release-toolkit#render-markdown-and-update-markdown)
 
 ## Unreleased
+### bugfix
+- Fix MBeanAttribute names to match the actual attribute names for metrics: 'db.threadpool.nativeTransportRequestActiveTasks', 'db.threadpool.nativeTransportRequestCompletedTasks', and 'db.threadpool.nativeTransportRequestPendingTasks'
 
 ## v2.13.2 - 2023-08-02
 

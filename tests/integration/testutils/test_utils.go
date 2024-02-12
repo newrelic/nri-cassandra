@@ -177,8 +177,8 @@ func RunDockerCommandForContainer(t *testing.T, command, containerName string) e
 
 func isComposeReady(cxt context.Context) bool {
 	for {
-		errIntegration := exec.Command("docker", "exec", "-i", "integration_nri-cassandra_1", "ls").Run()
-		errCassandra := exec.Command("docker", "exec", "-i", "integration_cassandra_1", "ls").Run()
+		errIntegration := exec.Command("docker", "exec", "-i", "nri-cassandra", "ls").Run()
+		errCassandra := exec.Command("docker", "exec", "-i", "cassandra", "ls").Run()
 
 		if errIntegration == nil && errCassandra == nil {
 			return true
