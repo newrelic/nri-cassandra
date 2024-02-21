@@ -14,4 +14,5 @@ jobs:
       integration: "cassandra"
       windows_goarch_matrix: '["amd64"]' # 386 is not supported in jmx integrations
       windows_download_nrjmx: true
+      publish_schema: "ohi-jmx"
     secrets: inherit
