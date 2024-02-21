@@ -8,8 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased section should follow [Release Toolkit](https://github.com/newrelic/release-toolkit#render-markdown-and-update-markdown)
 
 ## Unreleased
-### bugfix
+
+## v2.13.3 - 2024-02-21
+
+### 🐞 Bug fixes
 - Fix MBeanAttribute names to match the actual attribute names for metrics: 'db.threadpool.nativeTransportRequestActiveTasks', 'db.threadpool.nativeTransportRequestCompletedTasks', and 'db.threadpool.nativeTransportRequestPendingTasks'
+
+### ⛓️ Dependencies
+- Updated github.com/newrelic/infra-integrations-sdk to v3.8.2+incompatible
 
 ## v2.13.2 - 2023-08-02
 
