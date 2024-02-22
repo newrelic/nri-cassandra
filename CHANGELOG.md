@@ -9,6 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### bugfix
+- Update publish schema
+
 ## v2.13.3 - 2024-02-21
 
 ### 🐞 Bug fixes
