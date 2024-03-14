@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/newrelic/infra-integrations-sdk/data/inventory"
 )
