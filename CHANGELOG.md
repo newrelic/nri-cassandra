@@ -9,6 +9,12 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+## v2.13.7 - 2024-06-26
+
+### ⛓️ Dependencies
+- Updated golang version to v1.22.4
+- Updated github.com/newrelic/nrjmx/gojmx digest
+
 ## v2.13.6 - 2024-05-08
 
 ### ⛓️ Dependencies
