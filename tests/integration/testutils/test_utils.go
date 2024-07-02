@@ -198,8 +198,8 @@ func isComposeReady(cxt context.Context) bool {
 func ConfigureCassandraDockerCompose(ctx context.Context) error {
 	composeFilePaths := filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")
 
-	args := []string{"-f", composeFilePaths, "up", "-d", "--build"}
-	cmd := exec.CommandContext(ctx, "docker-compose", args...)
+	args := []string{"compose", "-f", composeFilePaths, "up", "-d", "--build"}
+	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("EXTRA_JVM_OPTS=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", Hostname))
 
 	cmd.Stderr = os.Stderr
@@ -207,11 +207,11 @@ func ConfigureCassandraDockerCompose(ctx context.Context) error {
 
 	err := cmd.Start()
 	if err != nil {
-		return fmt.Errorf("failed to run docker-compose: error: %w", err)
+		return fmt.Errorf("failed to run docker compose: error: %w", err)
 	}
 
 	if !isComposeReady(ctx) {
-		return fmt.Errorf("failed to run docker-compose: it has not reached a ready state")
+		return fmt.Errorf("failed to run docker compose: it has not reached a ready state")
 	}
 
 	return nil
@@ -221,8 +221,8 @@ func ConfigureCassandraDockerCompose(ctx context.Context) error {
 func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
 	composeFilePaths := filepath.Join(GetIntegrationTestsPath(), "docker-compose.yml")
 
-	args := []string{"-f", composeFilePaths, "up", "-d", "--build"}
-	cmd := exec.CommandContext(ctx, "docker-compose", args...)
+	args := []string{"compose", "-f", composeFilePaths, "up", "-d", "--build"}
+	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Env = append(os.Environ(), "EXTRA_JVM_OPTS= -Dcom.sun.management.jmxremote.authenticate=true "+
 		fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname)+
 		"-Dcom.sun.management.jmxremote.ssl=true "+
@@ -240,11 +240,11 @@ func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
 
 	err := cmd.Start()
 	if err != nil {
-		return fmt.Errorf("failed to run docker-compose: error: %w", err)
+		return fmt.Errorf("failed to run docker compose: error: %w", err)
 	}
 
 	if !isComposeReady(ctx) {
-		return fmt.Errorf("failed to run docker-compose: it has not reached a ready state")
+		return fmt.Errorf("failed to run docker compose: it has not reached a ready state")
 	}
 
 	return nil
