@@ -28,7 +28,7 @@ test:
 integration-test:
 	@echo "=== $(INTEGRATION) === [ test ]: running integration tests..."
 	@go clean -testcache
-	@go test -v -timeout 600s -tags=integration ./tests/integration/. || (ret=$$?; docker-compose -f tests/integration/docker-compose.yml down && exit $$ret)
+	@go test -v -timeout 600s -tags=integration ./tests/integration/. || (ret=$$?; docker compose -f tests/integration/docker-compose.yml down && exit $$ret)
 
 install: compile
 	@echo "=== $(INTEGRATION) === [ install ]: installing bin/$(BINARY_NAME)..."
