@@ -19,6 +19,3 @@ Inside the tests you can use the helper function that configures a docker contai
 
 compose := testutils.ConfigureSSLCassandraDockerCompose()
 err := testutils.RunDockerCompose(s.compose)
-
-
-
