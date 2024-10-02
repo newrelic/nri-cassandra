@@ -7,9 +7,10 @@ package main
 
 import (
 	"errors"
-	"github.com/newrelic/infra-integrations-sdk/v3/log"
 	"io/ioutil"
 	"regexp"
+
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
 
 	"gopkg.in/yaml.v2"
 
