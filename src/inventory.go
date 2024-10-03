@@ -7,13 +7,14 @@ package main
 
 import (
 	"errors"
-	"github.com/newrelic/infra-integrations-sdk/log"
 	"io/ioutil"
 	"regexp"
 
+	"github.com/newrelic/infra-integrations-sdk/v3/log"
+
 	"gopkg.in/yaml.v2"
 
-	"github.com/newrelic/infra-integrations-sdk/data/inventory"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/inventory"
 )
 
 var (

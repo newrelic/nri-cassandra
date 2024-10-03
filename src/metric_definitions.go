@@ -8,7 +8,7 @@ package main
 import (
 	"reflect"
 
-	"github.com/newrelic/infra-integrations-sdk/data/metric"
+	"github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 )
 
 // Definitions struct will contain the metrics that have to be collected.

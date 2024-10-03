@@ -1,6 +1,6 @@
 package main
 
-import "github.com/newrelic/infra-integrations-sdk/data/metric"
+import "github.com/newrelic/infra-integrations-sdk/v3/data/metric"
 
 // Query defines a JMX query that has to be performed. Multiple JMX attributes can be received through a single Query.
 // Each JMX Attribute maps to a single NR metric. We set an Alias to attribute to define the name of the metric in NR.
