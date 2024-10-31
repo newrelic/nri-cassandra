@@ -272,7 +272,7 @@ prepared_statements_cache_size_mb:
 # See description of 'prepared_statements_cache_size_mb' above for more information.
 #
 # Default value ("auto") is 1/256th of the heap or 10MB, whichever is greater
-thrift_prepared_statements_cache_size_mb:
+# thrift_prepared_statements_cache_size_mb:
 
 # Maximum size of the key cache in memory.
 #
@@ -515,6 +515,12 @@ memtable_allocation_type: heap_buffers
 # For more details see https://issues.apache.org/jira/browse/CASSANDRA-14096.
 #
 # repair_session_max_tree_depth: 18
+# repair_session_space:
+# concurrent_merkle_tree_requests: 0
+# repair:
+# commitlog_total_space:
+# repaired_data_tracking_for_range_reads_enabled: true
+# repaired_data_tracking_for_partition_reads_enabled: true
 
 # Total space to use for commit logs on disk.
 #
@@ -677,7 +683,7 @@ native_transport_port: 9042
 # native_transport_max_concurrent_connections_per_ip: -1
 
 # Whether to start the thrift rpc server.
-start_rpc: false
+# start_rpc: false
 
 # The address or interface to bind the Thrift RPC service and native transport
 # server to.
@@ -704,7 +710,7 @@ start_rpc: false
 # rpc_interface_prefer_ipv6: false
 
 # port for Thrift to listen for clients on
-rpc_port: 9160
+# rpc_port: 9160
 
 # RPC address to broadcast to drivers and other Cassandra nodes. This cannot
 # be set to 0.0.0.0. If left blank, this will be set to the value of
@@ -735,7 +741,7 @@ rpc_keepalive: true
 #
 # Alternatively,  can provide your own RPC server by providing the fully-qualified class name
 # of an o.a.c.t.TServerFactory that can create an instance of it.
-rpc_server_type: sync
+# rpc_server_type: sync
 
 # Uncomment rpc_min|max_thread to set request pool size limits.
 #
@@ -771,7 +777,7 @@ rpc_server_type: sync
 # internode_recv_buff_size_in_bytes:
 
 # Frame size for thrift (maximum message length).
-thrift_framed_transport_size_in_mb: 15
+# thrift_framed_transport_size_in_mb: 15
 
 # Set to true to have Cassandra create a hard link to each sstable
 # flushed or streamed locally in a backups/ subdirectory of the
@@ -1005,7 +1011,7 @@ dynamic_snitch_badness_threshold: 0.1
 # client requests to a node with a separate queue for each
 # request_scheduler_id. The scheduler is further customized by
 # request_scheduler_options as described below.
-request_scheduler: org.apache.cassandra.scheduler.NoScheduler
+# request_scheduler: org.apache.cassandra.scheduler.NoScheduler
 
 # Scheduler Options vary based on the type of scheduler
 #

@@ -23,12 +23,15 @@ import (
 )
 
 const (
-	envCassandraVersion = "3.11.0"
-	timeout             = "5000"
+	timeout = "10000"
 
 	integrationBinPath       = "/nri-cassandra"
 	integrationContainerName = "nri-cassandra"
-	cassandraContainerName   = "cassandra"
+)
+
+var (
+	envCassandraVersions    = []string{"3.11.0", "4.0.3", "5.0.2"}
+	cassandraContainerNames = []string{"cassandra-3-11-0", "cassandra-4-0-3", "cassandra-latest-supported"}
 )
 
 type CassandraTestSuite struct {
@@ -57,43 +60,45 @@ func (s *CassandraTestSuite) TearDownSuite() {
 }
 
 func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
-	t := s.T()
+	for i, _ := range envCassandraVersions {
+		t := s.T()
 
-	testName := t.Name()
+		testName := t.Name()
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancelFn()
+		ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancelFn()
 
-	testCases := []struct {
-		name       string
-		config     map[string]string
-		schemaFile string
-	}{
-		{
-			name: "MetricsAndInventoryAreCollected",
-			config: map[string]string{
-				"CONFIG_PATH":     "/etc/cassandra/cassandra.yaml",
-				"HOSTNAME":        testutils.Hostname,
-				"TIMEOUT":         timeout,
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+		testCases := []struct {
+			name       string
+			config     map[string]string
+			schemaFile string
+		}{
+			{
+				name: "MetricsAndInventoryAreCollected",
+				config: map[string]string{
+					"CONFIG_PATH":     "/etc/cassandra/cassandra-" + envCassandraVersions[i] + ".yaml",
+					"HOSTNAME":        testutils.Hostnames[i],
+					"TIMEOUT":         timeout,
+					"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+				},
+				schemaFile: "cassandra-schema.json",
 			},
-			schemaFile: "cassandra-schema.json",
-		},
-	}
+		}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
-			assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+		for _, testCase := range testCases {
+			t.Run(testCase.name, func(t *testing.T) {
+				stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+				assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
-			assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
+				assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
 
-			schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
-			schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
+				schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersions[i])
+				schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
 
-			err = jsonschema.Validate(schemaPath, stdout)
-			assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-		})
+				err = jsonschema.Validate(schemaPath, stdout)
+				assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+			})
+		}
 	}
 }
 
@@ -116,7 +121,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_WrongConfig() {
 		expectedError string
 	}{
 		{
-			name: "InvalidPort",
+			name: "InvalidHostname",
 			config: map[string]string{
 				"METRICS":         "true",
 				"HOSTNAME":        "wrong_hostname",
@@ -126,10 +131,10 @@ func (s *CassandraTestSuite) TestCassandraIntegration_WrongConfig() {
 			expectedError: "Unknown host",
 		},
 		{
-			name: "InvalidHostname",
+			name: "InvalidPort",
 			config: map[string]string{
 				"METRICS":         "true",
-				"HOSTNAME":        testutils.Hostname,
+				"HOSTNAME":        testutils.Hostnames[len(testutils.Hostnames)-1],
 				"PORT":            "1",
 				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},

@@ -1,0 +1,1668 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "properties": {
+    "integration_version": {
+      "minLength": 1,
+      "pattern": "^\\d.\\d.\\d$",
+      "type": "string"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "items": {
+              "properties": {},
+              "required": []
+            },
+            "type": "array"
+          },
+          "inventory": {
+            "minProperties": 1,
+            "properties": {
+              "authenticator": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "authorizer": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "auto_snapshot": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "back_pressure_enabled": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "batch_size_fail_threshold_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "batch_size_warn_threshold_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "batchlog_replay_throttle_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "cas_contention_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "cdc_enabled": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "client_encryption_options": {
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "keystore": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "keystore_password": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "keystore",
+                  "keystore_password",
+                  "optional"
+                ],
+                "type": "object"
+              },
+              "cluster_name": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "column_index_cache_size_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "column_index_size_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "commit_failure_policy": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "commitlog_segment_size_in_mb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "commitlog_sync": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "commitlog_sync_period_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "compaction_large_partition_warning_threshold_mb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "compaction_throughput_mb_per_sec": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "concurrent_counter_writes": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "concurrent_materialized_view_writes": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "concurrent_reads": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "concurrent_writes": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "counter_cache_save_period": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "counter_cache_size_in_mb": {
+                "properties": {
+                  "value": {}
+                },
+                "required": [],
+                "type": "object"
+              },
+              "counter_write_request_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "credentials_validity_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "cross_node_timeout": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "disk_failure_policy": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "dynamic_snitch_badness_threshold": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "dynamic_snitch_reset_interval_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "dynamic_snitch_update_interval_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "enable_scripted_user_defined_functions": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "enable_user_defined_functions": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "endpoint_snitch": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "gc_warn_threshold_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "hinted_handoff_enabled": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "hinted_handoff_throttle_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "hints_flush_period_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "incremental_backups": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "index_summary_capacity_in_mb": {
+                "properties": {
+                  "value": {}
+                },
+                "required": [],
+                "type": "object"
+              },
+              "index_summary_resize_interval_in_minutes": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "inter_dc_tcp_nodelay": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "internode_compression": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "key_cache_save_period": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "key_cache_size_in_mb": {
+                "properties": {
+                  "value": {}
+                },
+                "required": [],
+                "type": "object"
+              },
+              "listen_address": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "max_hint_window_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "max_hints_delivery_threads": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "max_hints_file_size_in_mb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "memtable_allocation_type": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "native_transport_port": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "num_tokens": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "partitioner": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "permissions_validity_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "prepared_statements_cache_size_mb": {
+                "properties": {
+                  "value": {}
+                },
+                "required": [],
+                "type": "object"
+              },
+              "range_request_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "read_request_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "request_scheduler": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "request_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "role_manager": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "roles_validity_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "row_cache_save_period": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "row_cache_size_in_mb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "rpc_address": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "rpc_keepalive": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "rpc_port": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "rpc_server_type": {
+                "properties": {
+                  "value": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "server_encryption_options": {
+                "properties": {
+                  "internode_encryption": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "keystore": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "keystore_password": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "truststore": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "truststore_password": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "internode_encryption",
+                  "keystore",
+                  "keystore_password",
+                  "truststore",
+                  "truststore_password"
+                ],
+                "type": "object"
+              },
+              "slow_query_log_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "snapshot_before_compaction": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "ssl_storage_port": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "sstable_preemptive_open_interval_in_mb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "start_native_transport": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "start_rpc": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "storage_port": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "thrift_framed_transport_size_in_mb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "thrift_prepared_statements_cache_size_mb": {
+                "properties": {
+                  "value": {}
+                },
+                "required": [],
+                "type": "object"
+              },
+              "tombstone_failure_threshold": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "tombstone_warn_threshold": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "tracetype_query_ttl": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "tracetype_repair_ttl": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "transparent_data_encryption_options": {
+                "properties": {
+                  "chunk_length_kb": {
+                    "type": "number"
+                  },
+                  "cipher": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "key_alias": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "chunk_length_kb",
+                  "cipher",
+                  "enabled",
+                  "key_alias"
+                ],
+                "type": "object"
+              },
+              "trickle_fsync": {
+                "properties": {
+                  "value": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "trickle_fsync_interval_in_kb": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "truncate_request_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "unlogged_batch_across_partitions_warn_threshold": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "windows_timer_interval": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              },
+              "write_request_timeout_in_ms": {
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "metrics": {
+            "items": [
+              {
+                "properties": {
+                  "client.connectedNativeClients": {
+                    "type": "number"
+                  },
+                  "cluster.datacenter": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "cluster.name": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "cluster.rack": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "db.allMemtablesOffHeapSizeBytes": {
+                    "type": "number"
+                  },
+                  "db.allMemtablesOnHeapSizeBytes": {
+                    "type": "number"
+                  },
+                  "db.commitLogCompletedTasksPerSecond": {
+                    "type": "number"
+                  },
+                  "db.commitLogPendindTasks": {
+                    "type": "number"
+                  },
+                  "db.commitLogTotalSizeBytes": {
+                    "type": "number"
+                  },
+                  "db.droppedBatchRemoveMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedBatchStoreMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedCounterMutationMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedHintMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedMutationMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedPagedRangeMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedRangeSliceMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedReadMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedReadRepairMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedRequestResponseMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.droppedTraceMessagesPerSecond": {
+                    "type": "number"
+                  },
+                  "db.keyCacheCapacityBytes": {
+                    "type": "number"
+                  },
+                  "db.keyCacheHitRate": {
+                    "type": "number"
+                  },
+                  "db.keyCacheHitsPerSecond": {
+                    "type": "number"
+                  },
+                  "db.keyCacheRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "db.keyCacheSizeBytes": {
+                    "type": "number"
+                  },
+                  "db.liveSSTableCount": {
+                    "type": "number"
+                  },
+                  "db.loadBytes": {
+                    "type": "number"
+                  },
+                  "db.rowCacheCapacityBytes": {
+                    "type": "number"
+                  },
+                  "db.rowCacheHitsPerSecond": {
+                    "type": "number"
+                  },
+                  "db.rowCacheRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "db.rowCacheSizeBytes": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalAntiEntropyStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalAntiEntropyStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalAntiEntropyStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalAntiEntropyStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCacheCleanupExecutorActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCacheCleanupExecutorCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCacheCleanupExecutorCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCacheCleanupExecutorPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCompactionExecutorActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCompactionExecutorCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCompactionExecutorCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalCompactionExecutorPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalGossipStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalGossipStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalGossipStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalGossipStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalHintsDispatcherActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalHintsDispatcherCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalHintsDispatcherCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalHintsDispatcherPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalInternalResponseStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalInternalResponseStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalInternalResponseStagePCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalInternalResponseStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableFlushWriterActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableFlushWriterCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableFlushWriterCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableFlushWriterPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtablePostFlushActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtablePostFlushCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtablePostFlushCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtablePostFlushPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableReclaimMemoryActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableReclaimMemoryCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableReclaimMemoryCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMemtableReclaimMemoryPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMigrationStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMigrationStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMigrationStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMigrationStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMiscStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMiscStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMiscStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalMiscStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalPendingRangeCalculatorActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalPendingRangeCalculatorCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalPendingRangeCalculatorCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalPendingRangeCalculatorPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSamplerActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSamplerCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSamplerCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSamplerPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSecondaryIndexManagementActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSecondaryIndexManagementCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalSecondaryIndexManagementPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalValidationExecutorActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalValidationExecutorCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalValidationExecutorCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.internalValidationExecutorPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestPendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.nativeTransportRequestTotalBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestCounterMutationStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestCounterMutationStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestCounterMutationStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestCounterMutationStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestMutationStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestMutationStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestMutationStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestMutationStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadRepairStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadRepairStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadRepairStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadRepairStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestReadStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestRequestResponseStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestRequestResponseStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestRequestResponseStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestRequestResponseStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestViewMutationStageActiveTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestViewMutationStageCompletedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestViewMutationStageCurrentlyBlockedTasks": {
+                    "type": "number"
+                  },
+                  "db.threadpool.requestViewMutationStagePendingTasks": {
+                    "type": "number"
+                  },
+                  "db.totalHintsInProgress": {
+                    "type": "number"
+                  },
+                  "db.totalHintsPerSecond": {
+                    "type": "number"
+                  },
+                  "db.hintsSucceededPerSecond": {
+                    "type": "number"
+                  },
+                  "db.hintsFailedPerSecond": {
+                    "type": "number"
+                  },
+                  "db.hintsTimedOutPerSecond": {
+                    "type": "number"
+                  },
+                  "event_type": {
+                    "minLength": 1,
+                    "pattern": "^CassandraSample$",
+                    "type": "string"
+                  },
+                  "query.CASReadRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.CASWriteRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.rangeSliceRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.rangeSliceTimeoutsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.rangeSliceUnavailablesPerSecond": {
+                    "type": "number"
+                  },
+                  "query.readLatency50thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.readLatency75thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.readLatency95thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.readLatency98thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.readLatency999thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.readLatency99thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.readRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.readTimeoutsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.readUnavailablesPerSecond": {
+                    "type": "number"
+                  },
+                  "query.viewWriteRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.writeLatency50thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.writeLatency75thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.writeLatency95thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.writeLatency98thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.writeLatency999thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.writeLatency99thPercentileMilliseconds": {
+                    "type": "number"
+                  },
+                  "query.writeRequestsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.writeTimeoutsPerSecond": {
+                    "type": "number"
+                  },
+                  "query.writeUnavailablesPerSecond": {
+                    "type": "number"
+                  },
+                  "software.version": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "storage.exceptionCount": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "client.connectedNativeClients",
+                  "cluster.datacenter",
+                  "cluster.name",
+                  "cluster.rack",
+                  "db.allMemtablesOffHeapSizeBytes",
+                  "db.allMemtablesOnHeapSizeBytes",
+                  "db.commitLogCompletedTasksPerSecond",
+                  "db.commitLogPendindTasks",
+                  "db.commitLogTotalSizeBytes",
+                  "db.droppedBatchRemoveMessagesPerSecond",
+                  "db.droppedBatchStoreMessagesPerSecond",
+                  "db.droppedCounterMutationMessagesPerSecond",
+                  "db.droppedHintMessagesPerSecond",
+                  "db.droppedMutationMessagesPerSecond",
+                  "db.droppedRangeSliceMessagesPerSecond",
+                  "db.droppedReadMessagesPerSecond",
+                  "db.droppedReadRepairMessagesPerSecond",
+                  "db.droppedRequestResponseMessagesPerSecond",
+                  "db.droppedTraceMessagesPerSecond",
+                  "db.keyCacheCapacityBytes",
+                  "db.keyCacheHitRate",
+                  "db.keyCacheHitsPerSecond",
+                  "db.keyCacheRequestsPerSecond",
+                  "db.keyCacheSizeBytes",
+                  "db.liveSSTableCount",
+                  "db.loadBytes",
+                  "db.rowCacheCapacityBytes",
+                  "db.rowCacheHitsPerSecond",
+                  "db.rowCacheRequestsPerSecond",
+                  "db.rowCacheSizeBytes",
+                  "db.threadpool.internalCacheCleanupExecutorActiveTasks",
+                  "db.threadpool.internalCacheCleanupExecutorCompletedTasks",
+                  "db.threadpool.internalCacheCleanupExecutorCurrentlyBlockedTasks",
+                  "db.threadpool.internalCacheCleanupExecutorPendingTasks",
+                  "db.threadpool.internalCompactionExecutorActiveTasks",
+                  "db.threadpool.internalCompactionExecutorCompletedTasks",
+                  "db.threadpool.internalCompactionExecutorCurrentlyBlockedTasks",
+                  "db.threadpool.internalCompactionExecutorPendingTasks",
+                  "db.threadpool.internalGossipStageActiveTasks",
+                  "db.threadpool.internalGossipStageCompletedTasks",
+                  "db.threadpool.internalGossipStageCurrentlyBlockedTasks",
+                  "db.threadpool.internalGossipStagePendingTasks",
+                  "db.threadpool.internalHintsDispatcherActiveTasks",
+                  "db.threadpool.internalHintsDispatcherCompletedTasks",
+                  "db.threadpool.internalHintsDispatcherCurrentlyBlockedTasks",
+                  "db.threadpool.internalHintsDispatcherPendingTasks",
+                  "db.threadpool.internalMemtableFlushWriterActiveTasks",
+                  "db.threadpool.internalMemtableFlushWriterCompletedTasks",
+                  "db.threadpool.internalMemtableFlushWriterCurrentlyBlockedTasks",
+                  "db.threadpool.internalMemtableFlushWriterPendingTasks",
+                  "db.threadpool.internalMemtablePostFlushActiveTasks",
+                  "db.threadpool.internalMemtablePostFlushCompletedTasks",
+                  "db.threadpool.internalMemtablePostFlushCurrentlyBlockedTasks",
+                  "db.threadpool.internalMemtablePostFlushPendingTasks",
+                  "db.threadpool.internalMemtableReclaimMemoryActiveTasks",
+                  "db.threadpool.internalMemtableReclaimMemoryCompletedTasks",
+                  "db.threadpool.internalMemtableReclaimMemoryCurrentlyBlockedTasks",
+                  "db.threadpool.internalMemtableReclaimMemoryPendingTasks",
+                  "db.threadpool.internalMigrationStageActiveTasks",
+                  "db.threadpool.internalMigrationStageCompletedTasks",
+                  "db.threadpool.internalMigrationStageCurrentlyBlockedTasks",
+                  "db.threadpool.internalMigrationStagePendingTasks",
+                  "db.threadpool.internalPendingRangeCalculatorActiveTasks",
+                  "db.threadpool.internalPendingRangeCalculatorCompletedTasks",
+                  "db.threadpool.internalPendingRangeCalculatorCurrentlyBlockedTasks",
+                  "db.threadpool.internalPendingRangeCalculatorPendingTasks",
+                  "db.threadpool.internalSamplerActiveTasks",
+                  "db.threadpool.internalSamplerCompletedTasks",
+                  "db.threadpool.internalSamplerCurrentlyBlockedTasks",
+                  "db.threadpool.internalSamplerPendingTasks",
+                  "db.threadpool.internalSecondaryIndexManagementActiveTasks",
+                  "db.threadpool.internalSecondaryIndexManagementCompletedTasks",
+                  "db.threadpool.internalSecondaryIndexManagementCurrentlyBlockedTasks",
+                  "db.threadpool.internalSecondaryIndexManagementPendingTasks",
+                  "db.threadpool.internalValidationExecutorActiveTasks",
+                  "db.threadpool.internalValidationExecutorCompletedTasks",
+                  "db.threadpool.internalValidationExecutorCurrentlyBlockedTasks",
+                  "db.threadpool.internalValidationExecutorPendingTasks",
+                  "db.threadpool.requestMutationStageActiveTasks",
+                  "db.threadpool.requestMutationStageCompletedTasks",
+                  "db.threadpool.requestMutationStageCurrentlyBlockedTasks",
+                  "db.threadpool.requestMutationStagePendingTasks",
+                  "db.threadpool.requestReadStageActiveTasks",
+                  "db.threadpool.requestReadStageCompletedTasks",
+                  "db.threadpool.requestReadStageCurrentlyBlockedTasks",
+                  "db.threadpool.requestReadStagePendingTasks",
+                  "db.totalHintsInProgress",
+                  "db.totalHintsPerSecond",
+                  "event_type",
+                  "query.CASReadRequestsPerSecond",
+                  "query.CASWriteRequestsPerSecond",
+                  "query.rangeSliceRequestsPerSecond",
+                  "query.rangeSliceTimeoutsPerSecond",
+                  "query.rangeSliceUnavailablesPerSecond",
+                  "query.readLatency50thPercentileMilliseconds",
+                  "query.readLatency75thPercentileMilliseconds",
+                  "query.readLatency95thPercentileMilliseconds",
+                  "query.readLatency98thPercentileMilliseconds",
+                  "query.readLatency999thPercentileMilliseconds",
+                  "query.readLatency99thPercentileMilliseconds",
+                  "query.readRequestsPerSecond",
+                  "query.readTimeoutsPerSecond",
+                  "query.readUnavailablesPerSecond",
+                  "query.viewWriteRequestsPerSecond",
+                  "query.writeLatency50thPercentileMilliseconds",
+                  "query.writeLatency75thPercentileMilliseconds",
+                  "query.writeLatency95thPercentileMilliseconds",
+                  "query.writeLatency98thPercentileMilliseconds",
+                  "query.writeLatency999thPercentileMilliseconds",
+                  "query.writeLatency99thPercentileMilliseconds",
+                  "query.writeRequestsPerSecond",
+                  "query.writeTimeoutsPerSecond",
+                  "query.writeUnavailablesPerSecond",
+                  "software.version",
+                  "storage.exceptionCount"
+                ]
+              }
+            ],
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "metrics",
+          "inventory",
+          "events"
+        ]
+      }
+    },
+    "name": {
+      "minLength": 1,
+      "pattern": "^com.newrelic.cassandra$",
+      "type": "string"
+    },
+    "protocol_version": {
+      "minLength": 1,
+      "pattern": "^3$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "protocol_version",
+    "integration_version",
+    "data"
+  ],
+  "type": "object"
+}

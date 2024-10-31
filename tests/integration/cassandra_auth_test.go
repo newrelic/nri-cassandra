@@ -51,101 +51,105 @@ func (s *CassandraSSLTestSuite) TearDownSuite() {
 }
 
 func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
-	t := s.T()
+	for i, _ := range envCassandraVersions {
+		t := s.T()
 
-	testName := t.Name()
+		testName := t.Name()
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancelFn()
+		ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancelFn()
 
-	env := map[string]string{
-		"METRICS": "true",
-		"TIMEOUT": SSLConnectionTimeout,
+		env := map[string]string{
+			"METRICS": "true",
+			"TIMEOUT": SSLConnectionTimeout,
 
-		"HOSTNAME": testutils.Hostname,
-		"USERNAME": testutils.JMXUsername,
-		"PASSWORD": testutils.JMXPassword,
+			"HOSTNAME": testutils.Hostnames[i],
+			"USERNAME": testutils.JMXUsername,
+			"PASSWORD": testutils.JMXPassword,
 
-		"TRUST_STORE":          testutils.TruststoreFile,
-		"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
-		"KEY_STORE":            testutils.KeystoreFile,
-		"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
+			"TRUST_STORE":          testutils.TruststoreFile,
+			"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
+			"KEY_STORE":            testutils.KeystoreFile,
+			"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
 
-		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+		}
+
+		stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
+		assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+
+		assert.Empty(t, testutils.FilterStderr(stderr))
+
+		schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersions[i])
+		schemaPath := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
+
+		err = jsonschema.Validate(schemaPath, stdout)
+		assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
 	}
-
-	stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
-	assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-	assert.Empty(t, testutils.FilterStderr(stderr))
-
-	schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
-	schemaPath := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
-
-	err = jsonschema.Validate(schemaPath, stdout)
-	assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
 }
 
 func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
-	t := s.T()
+	for _, Hostname := range testutils.Hostnames {
+		t := s.T()
 
-	testName := t.Name()
+		testName := t.Name()
 
-	testCases := []struct {
-		name          string
-		config        map[string]string
-		expectedError string
-	}{
-		{
-			name: "WrongPassword",
-			config: map[string]string{
-				"METRICS": "true",
-				"TIMEOUT": SSLConnectionTimeout,
+		testCases := []struct {
+			name          string
+			config        map[string]string
+			expectedError string
+		}{
+			{
+				name: "WrongPassword",
+				config: map[string]string{
+					"METRICS": "true",
+					"TIMEOUT": SSLConnectionTimeout,
 
-				"HOSTNAME": testutils.Hostname,
-				"USERNAME": "wrong",
-				"PASSWORD": "wrong",
+					"HOSTNAME": Hostname,
+					"USERNAME": "wrong",
+					"PASSWORD": "wrong",
 
-				"TRUST_STORE":          testutils.TruststoreFile,
-				"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
-				"KEY_STORE":            testutils.KeystoreFile,
-				"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
+					"TRUST_STORE":          testutils.TruststoreFile,
+					"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
+					"KEY_STORE":            testutils.KeystoreFile,
+					"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
 
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+					"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+				},
+				expectedError: "Authentication failed! Invalid username or password",
 			},
-			expectedError: "Authentication failed! Invalid username or password",
-		},
-		{
-			name: "WrongKeyStorePassword",
-			config: map[string]string{
-				"METRICS": "true",
-				"TIMEOUT": SSLConnectionTimeout,
+			{
+				name: "WrongKeyStorePassword",
+				config: map[string]string{
+					"METRICS": "true",
+					"TIMEOUT": SSLConnectionTimeout,
 
-				"HOSTNAME": testutils.Hostname,
-				"USERNAME": testutils.JMXUsername,
-				"PASSWORD": testutils.JMXPassword,
+					"HOSTNAME": Hostname,
+					"USERNAME": testutils.JMXUsername,
+					"PASSWORD": testutils.JMXPassword,
 
-				"TRUST_STORE":          testutils.TruststoreFile,
-				"TRUST_STORE_PASSWORD": "wrong",
-				"KEY_STORE":            testutils.KeystoreFile,
-				"KEY_STORE_PASSWORD":   "wrong",
+					"TRUST_STORE":          testutils.TruststoreFile,
+					"TRUST_STORE_PASSWORD": "wrong",
+					"KEY_STORE":            testutils.KeystoreFile,
+					"KEY_STORE_PASSWORD":   "wrong",
 
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+					"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+				},
+				expectedError: "java.security.NoSuchAlgorithmException",
 			},
-			expectedError: "java.security.NoSuchAlgorithmException",
-		},
-	}
+		}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-			defer cancelFn()
+		for _, testCase := range testCases {
+			t.Run(testCase.name, func(t *testing.T) {
+				ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+				defer cancelFn()
 
-			stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
-			assert.Error(t, err)
-			assert.Empty(t, stdout)
+				stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+				assert.Error(t, err)
+				assert.Empty(t, stdout)
 
-			testutils.AssertReceivedErrors(t, testCase.expectedError, strings.Split(stderr, "\n")...)
-		})
+				testutils.AssertReceivedErrors(t, testCase.expectedError, strings.Split(stderr, "\n")...)
+			})
+		}
 	}
 }

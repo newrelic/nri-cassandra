@@ -46,65 +46,67 @@ func (s *CassandraLongRunningTestSuite) TearDownSuite() {
 }
 
 func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningIntegration() {
-	t := s.T()
+	for i, _ := range envCassandraVersions {
+		t := s.T()
 
-	testName := t.Name()
+		testName := t.Name()
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 300*time.Second)
-	defer cancelFn()
+		ctx, cancelFn := context.WithTimeout(context.Background(), 300*time.Second)
+		defer cancelFn()
 
-	env := map[string]string{
-		"METRICS":  "true",
-		"HOSTNAME": testutils.Hostname,
-		"TIMEOUT":  timeout,
+		env := map[string]string{
+			"METRICS":  "true",
+			"HOSTNAME": testutils.Hostnames[i],
+			"TIMEOUT":  timeout,
 
-		"LONG_RUNNING":       "true",
-		"INTERVAL":           "2",
-		"HEARTBEAT_INTERVAL": "2",
+			"LONG_RUNNING":       "true",
+			"INTERVAL":           "2",
+			"HEARTBEAT_INTERVAL": "2",
 
-		"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+			"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 
-		// Uncomment those for troubleshooting.
-		// "VERBOSE":               "true",
-		// "ENABLE_INTERNAL_STATS": "true",
-	}
-
-	cmd := testutils.NewDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
-
-	output, err := testutils.StartLongRunningProcess(ctx, t, cmd)
-	assert.NoError(t, err)
-
-	go func() {
-		err = cmd.Wait()
-
-		// Avoid failing the test when we cancel the context at the end. (This is a long-running integration)
-		if ctx.Err() == nil {
-			assert.NoError(t, err)
+			// Uncomment those for troubleshooting.
+			// "VERBOSE":               "true",
+			// "ENABLE_INTERNAL_STATS": "true",
 		}
-	}()
 
-	schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersion)
-	schemaFile := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
-	testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 10*time.Second)
+		cmd := testutils.NewDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, env)
 
-	err = testutils.RunDockerCommandForContainer(t, "stop", cassandraContainerName)
-	require.NoError(t, err)
+		output, err := testutils.StartLongRunningProcess(ctx, t, cmd)
+		assert.NoError(t, err)
 
-	// Wait for the jmx connection to fail. We need to give it time as it might
-	// take time to timeout. The assumption is that after 60 seconds even if the jmx connection hangs,
-	// when we restart the container again it will fail because of a new server listening on jmx port.
-	log.Info("Waiting for jmx connection to fail")
-	time.Sleep(60 * time.Second)
+		go func() {
+			err = cmd.Wait()
 
-	err = testutils.RunDockerCommandForContainer(t, "start", cassandraContainerName)
-	require.NoError(t, err)
+			// Avoid failing the test when we cancel the context at the end. (This is a long-running integration)
+			if ctx.Err() == nil {
+				assert.NoError(t, err)
+			}
+		}()
 
-	log.Info("Waiting for cassandra server to be up again")
-	time.Sleep(30 * time.Second)
+		schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersions[i])
+		schemaFile := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
+		testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 30*time.Second)
 
-	_, stderr := output.Flush(t)
+		err = testutils.RunDockerCommandForContainer(t, "stop", cassandraContainerNames[i])
+		require.NoError(t, err)
 
-	testutils.AssertReceivedErrors(t, "connection error", stderr...)
+		// Wait for the jmx connection to fail. We need to give it time as it might
+		// take time to timeout. The assumption is that after 60 seconds even if the jmx connection hangs,
+		// when we restart the container again it will fail because of a new server listening on jmx port.
+		log.Info("Waiting for jmx connection to fail")
+		time.Sleep(60 * time.Second)
 
-	testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 10*time.Second)
+		err = testutils.RunDockerCommandForContainer(t, "start", cassandraContainerNames[i])
+		require.NoError(t, err)
+
+		log.Info("Waiting for cassandra server to be up again")
+		time.Sleep(30 * time.Second)
+
+		_, stderr := output.Flush(t)
+
+		testutils.AssertReceivedErrors(t, "connection error", stderr...)
+
+		testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 10*time.Second)
+	}
 }
