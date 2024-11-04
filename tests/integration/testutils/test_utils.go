@@ -206,10 +206,8 @@ func ConfigureCassandraDockerCompose(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Env = os.Environ()
 	for i, Hostname := range Hostnames {
-		// cmd.Env = append(os.Environ(), fmt.Sprintf("EXTRA_JVM_OPTS_1=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", Hostnames[0]))
 		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", i+1, Hostname))
 	}
-	fmt.Println("env--->", cmd.Env)
 
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
@@ -234,17 +232,6 @@ func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Env = os.Environ()
 	for i, Hostname := range Hostnames {
-		// cmd.Env = append(os.Environ(), "EXTRA_JVM_OPTS_1= -Dcom.sun.management.jmxremote.authenticate=true "+
-		// 	fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostnames[0])+
-		// 	"-Dcom.sun.management.jmxremote.ssl=true "+
-		// 	"-Dcom.sun.management.jmxremote.ssl.need.client.auth=true "+
-		// 	"-Dcom.sun.management.jmxremote.registry.ssl=true "+
-		// 	"-Dcom.sun.management.jmxremote=true "+
-		// 	"-Djavax.net.ssl.keyStore=/opt/cassandra/conf/certs/cassandra.keystore  "+
-		// 	fmt.Sprintf("-Djavax.net.ssl.keyStorePassword=%s ", KeystorePassword)+
-		// 	"-Djavax.net.ssl.trustStore=/opt/cassandra/conf/certs/cassandra.truststore "+
-		// 	fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=%s ", TruststorePassword),
-		// )
 		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d= -Dcom.sun.management.jmxremote.authenticate=true ", i+1)+
 			fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname)+
 			"-Dcom.sun.management.jmxremote.ssl=true "+
@@ -256,7 +243,6 @@ func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
 			"-Djavax.net.ssl.trustStore=/opt/cassandra/conf/certs/cassandra.truststore "+
 			fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=%s ", TruststorePassword))
 	}
-	fmt.Println("env--->", cmd.Env)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
