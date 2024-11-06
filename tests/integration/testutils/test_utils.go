@@ -34,11 +34,7 @@ const (
 )
 
 var (
-	CassandraConfigs = []struct {
-		Version       string
-		ContainerName string
-		Hostname      string // Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
-	}{
+	CassandraConfigs = []CassandraConfig{
 		{
 			Version:       "3.11.0",
 			ContainerName: "cassandra-3-11-0",
@@ -56,6 +52,12 @@ var (
 		},
 	}
 )
+
+type CassandraConfig struct {
+	Version       string
+	ContainerName string
+	Hostname      string // Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
+}
 
 // GetIntegrationTestsPath return the absolute path to this project's integration tests.
 func GetIntegrationTestsPath() (testsPath string) {

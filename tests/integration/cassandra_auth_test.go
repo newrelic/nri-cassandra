@@ -50,74 +50,63 @@ func (s *CassandraSSLTestSuite) TearDownSuite() {
 	s.cancelComposeCtx()
 }
 
-func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
-	t := s.T()
-
+func testCassandraIntegration_SSL(t *testing.T, ctx context.Context, cassandraConfig testutils.CassandraConfig) {
 	testName := t.Name()
+	testCase := struct {
+		name string
+		env  map[string]string
+	}{
+		name: fmt.Sprintf("CassandraIntegrationSSL - %s", cassandraConfig.Version),
+		env: map[string]string{
+			"METRICS": "true",
+			"TIMEOUT": SSLConnectionTimeout,
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancelFn()
+			"HOSTNAME": cassandraConfig.Hostname,
+			"USERNAME": testutils.JMXUsername,
+			"PASSWORD": testutils.JMXPassword,
 
-	testCases := []struct {
-		env              map[string]string
-		cassandraVersion string
-	}{}
-	for _, cassandraConfig := range testutils.CassandraConfigs {
-		testCases = append(testCases, struct {
-			env              map[string]string
-			cassandraVersion string
-		}{
-			env: map[string]string{
-				"METRICS": "true",
-				"TIMEOUT": SSLConnectionTimeout,
+			"TRUST_STORE":          testutils.TruststoreFile,
+			"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
+			"KEY_STORE":            testutils.KeystoreFile,
+			"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
 
-				"HOSTNAME": cassandraConfig.Hostname,
-				"USERNAME": testutils.JMXUsername,
-				"PASSWORD": testutils.JMXPassword,
-
-				"TRUST_STORE":          testutils.TruststoreFile,
-				"TRUST_STORE_PASSWORD": testutils.TruststorePassword,
-				"KEY_STORE":            testutils.KeystoreFile,
-				"KEY_STORE_PASSWORD":   testutils.KeystorePassword,
-
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-			},
-			cassandraVersion: cassandraConfig.Version,
-		})
+			"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+		},
 	}
-
-	for _, testCase := range testCases {
+	t.Run(testCase.name, func(t *testing.T) {
 		stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.env)
 		assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
 		assert.Empty(t, testutils.FilterStderr(stderr))
 
-		schemaDir := fmt.Sprintf("json-schema-files-%s", testCase.cassandraVersion)
+		schemaDir := fmt.Sprintf("json-schema-files-%s", cassandraConfig.Version)
 		schemaPath := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
 
 		err = jsonschema.Validate(schemaPath, stdout)
 		assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+	})
+}
+
+func (s *CassandraSSLTestSuite) TestCassandraIntegration_SSL() {
+	t := s.T()
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancelFn()
+
+	for _, cassandraConfig := range testutils.CassandraConfigs {
+		testCassandraIntegration_SSL(t, ctx, cassandraConfig)
 	}
 }
 
-func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
-	t := s.T()
-
+func testCassandraIntegration_WrongConfig(t *testing.T, cassandraConfig testutils.CassandraConfig) {
 	testName := t.Name()
-
 	testCases := []struct {
 		name          string
 		config        map[string]string
 		expectedError string
-	}{}
-
-	for _, cassandraConfig := range testutils.CassandraConfigs {
-		testCases = append(testCases, struct {
-			name          string
-			config        map[string]string
-			expectedError string
-		}{
-			name: "WrongPassword",
+	}{
+		{
+			name: fmt.Sprintf("WrongPasword - %s", cassandraConfig.Version),
 			config: map[string]string{
 				"METRICS": "true",
 				"TIMEOUT": SSLConnectionTimeout,
@@ -134,13 +123,9 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
 				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},
 			expectedError: "Authentication failed! Invalid username or password",
-		})
-		testCases = append(testCases, struct {
-			name          string
-			config        map[string]string
-			expectedError string
-		}{
-			name: "WrongKeyStorePassword",
+		},
+		{
+			name: fmt.Sprintf("WrongKeyStorePassword - %s", cassandraConfig.Version),
 			config: map[string]string{
 				"METRICS": "true",
 				"TIMEOUT": SSLConnectionTimeout,
@@ -157,9 +142,8 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
 				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},
 			expectedError: "java.security.NoSuchAlgorithmException",
-		})
+		},
 	}
-
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
@@ -171,5 +155,13 @@ func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
 
 			testutils.AssertReceivedErrors(t, testCase.expectedError, strings.Split(stderr, "\n")...)
 		})
+	}
+}
+
+func (s *CassandraSSLTestSuite) TestCassandraIntegration_WrongConfig() {
+	t := s.T()
+
+	for _, cassandraConfig := range testutils.CassandraConfigs {
+		testCassandraIntegration_WrongConfig(t, cassandraConfig)
 	}
 }

@@ -45,46 +45,31 @@ func (s *CassandraLongRunningTestSuite) TearDownSuite() {
 	s.cancelComposeCtx()
 }
 
-func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningIntegration() {
-	t := s.T()
-
+func testCassandraIntegration_LongRunningIntegration(t *testing.T, ctx context.Context, cassandraConfig testutils.CassandraConfig) {
 	testName := t.Name()
+	testCase := struct {
+		name string
+		env  map[string]string
+	}{
+		name: fmt.Sprintf("CassandraIntegrationLongRunningIntegration - %s", cassandraConfig.Version),
+		env: map[string]string{
+			"METRICS":  "true",
+			"HOSTNAME": cassandraConfig.Hostname,
+			"TIMEOUT":  timeout,
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
-	defer cancelFn()
+			"LONG_RUNNING":       "true",
+			"INTERVAL":           "2",
+			"HEARTBEAT_INTERVAL": "2",
 
-	testCases := []struct {
-		env              map[string]string
-		cassandraVersion string
-		containerName    string
-	}{}
-	for _, cassandraConfig := range testutils.CassandraConfigs {
-		testCases = append(testCases, struct {
-			env              map[string]string
-			cassandraVersion string
-			containerName    string
-		}{
-			env: map[string]string{
-				"METRICS":  "true",
-				"HOSTNAME": cassandraConfig.Hostname,
-				"TIMEOUT":  timeout,
+			"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 
-				"LONG_RUNNING":       "true",
-				"INTERVAL":           "2",
-				"HEARTBEAT_INTERVAL": "2",
-
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-
-				// Uncomment those for troubleshooting.
-				// "VERBOSE":               "true",
-				// "ENABLE_INTERNAL_STATS": "true",
-			},
-			cassandraVersion: cassandraConfig.Version,
-			containerName:    cassandraConfig.ContainerName,
-		})
+			// Uncomment those for troubleshooting.
+			// "VERBOSE":               "true",
+			// "ENABLE_INTERNAL_STATS": "true",
+		},
 	}
 
-	for _, testCase := range testCases {
+	t.Run(testCase.name, func(t *testing.T) {
 		cmd := testutils.NewDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.env)
 
 		output, err := testutils.StartLongRunningProcess(ctx, t, cmd)
@@ -99,11 +84,11 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 			}
 		}()
 
-		schemaDir := fmt.Sprintf("json-schema-files-%s", testCase.cassandraVersion)
+		schemaDir := fmt.Sprintf("json-schema-files-%s", cassandraConfig.Version)
 		schemaFile := filepath.Join(schemaDir, "cassandra-schema-metrics.json")
 		testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 30*time.Second)
 
-		err = testutils.RunDockerCommandForContainer(t, "stop", testCase.containerName)
+		err = testutils.RunDockerCommandForContainer(t, "stop", cassandraConfig.ContainerName)
 		require.NoError(t, err)
 
 		// Wait for the jmx connection to fail. We need to give it time as it might
@@ -112,7 +97,7 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 		log.Info("Waiting for jmx connection to fail")
 		time.Sleep(60 * time.Second)
 
-		err = testutils.RunDockerCommandForContainer(t, "start", testCase.containerName)
+		err = testutils.RunDockerCommandForContainer(t, "start", cassandraConfig.ContainerName)
 		require.NoError(t, err)
 
 		log.Info("Waiting for cassandra server to be up again")
@@ -123,5 +108,16 @@ func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningInte
 		testutils.AssertReceivedErrors(t, "connection error", stderr...)
 
 		testutils.AssertReceivedPayloadsMatchSchema(t, ctx, output, schemaFile, 30*time.Second)
+	})
+}
+
+func (s *CassandraLongRunningTestSuite) TestCassandraIntegration_LongRunningIntegration() {
+	t := s.T()
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
+	defer cancelFn()
+
+	for _, cassandraConfig := range testutils.CassandraConfigs {
+		testCassandraIntegration_LongRunningIntegration(t, ctx, cassandraConfig)
 	}
 }

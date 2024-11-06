@@ -54,52 +54,44 @@ func (s *CassandraTestSuite) TearDownSuite() {
 	s.cancelComposeCtx()
 }
 
+func testCassandraIntegrationSuccess(t *testing.T, ctx context.Context, cassandraConfig testutils.CassandraConfig) {
+	testName := t.Name()
+	testCase := struct {
+		name       string
+		config     map[string]string
+		schemaFile string
+	}{
+		name: fmt.Sprintf("MetricsAndInventoryAreCollected - %s", cassandraConfig.Version),
+		config: map[string]string{
+			"CONFIG_PATH":     "/etc/cassandra/cassandra-" + cassandraConfig.Version + ".yaml",
+			"HOSTNAME":        cassandraConfig.Hostname,
+			"TIMEOUT":         timeout,
+			"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
+		},
+		schemaFile: "cassandra-schema.json",
+	}
+	t.Run(testCase.name, func(t *testing.T) {
+		stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+		assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+
+		assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
+
+		schemaDir := fmt.Sprintf("json-schema-files-%s", cassandraConfig.Version)
+		schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
+
+		err = jsonschema.Validate(schemaPath, stdout)
+		assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+	})
+}
+
 func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
 	t := s.T()
-
-	testName := t.Name()
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFn()
 
-	testCases := []struct {
-		name             string
-		config           map[string]string
-		schemaFile       string
-		cassandraVersion string
-	}{}
 	for _, cassandraConfig := range testutils.CassandraConfigs {
-		testCases = append(testCases, struct {
-			name             string
-			config           map[string]string
-			schemaFile       string
-			cassandraVersion string
-		}{
-			name: "MetricsAndInventoryAreCollected",
-			config: map[string]string{
-				"CONFIG_PATH":     "/etc/cassandra/cassandra-" + cassandraConfig.Version + ".yaml",
-				"HOSTNAME":        cassandraConfig.Hostname,
-				"TIMEOUT":         timeout,
-				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-			},
-			schemaFile:       "cassandra-schema.json",
-			cassandraVersion: cassandraConfig.Version,
-		})
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
-			assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
-
-			assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
-
-			schemaDir := fmt.Sprintf("json-schema-files-%s", testCase.cassandraVersion)
-			schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
-
-			err = jsonschema.Validate(schemaPath, stdout)
-			assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-		})
+		testCassandraIntegrationSuccess(t, ctx, cassandraConfig)
 	}
 }
 
