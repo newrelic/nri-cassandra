@@ -35,7 +35,7 @@ type CassandraTestSuite struct {
 }
 
 func TestCassandraTestSuite(t *testing.T) {
-	// suite.Run(t, new(CassandraTestSuite))
+	suite.Run(t, new(CassandraTestSuite))
 }
 
 func (s *CassandraTestSuite) SetupSuite() {

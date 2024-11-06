@@ -32,7 +32,7 @@ type CassandraSSLTestSuite struct {
 }
 
 func TestCassandraSSLTestSuite(t *testing.T) {
-	// suite.Run(t, new(CassandraSSLTestSuite))
+	suite.Run(t, new(CassandraSSLTestSuite))
 }
 
 func (s *CassandraSSLTestSuite) SetupSuite() {
