@@ -34,8 +34,27 @@ const (
 )
 
 var (
-	// Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
-	Hostnames = []string{"cassandra-3-11-0", "cassandra-4-0-3", "cassandra-latest-supported"}
+	CassandraConfigs = []struct {
+		Version       string
+		ContainerName string
+		Hostname      string // Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
+	}{
+		{
+			Version:       "3.11.0",
+			ContainerName: "cassandra-3-11-0",
+			Hostname:      "cassandra-3-11-0",
+		},
+		{
+			Version:       "4.0.3",
+			ContainerName: "cassandra-4-0-3",
+			Hostname:      "cassandra-4-0-3",
+		},
+		{
+			Version:       "5.0.2",
+			ContainerName: "cassandra-latest-supported",
+			Hostname:      "cassandra-latest-supported",
+		},
+	}
 )
 
 // GetIntegrationTestsPath return the absolute path to this project's integration tests.
@@ -205,8 +224,8 @@ func ConfigureCassandraDockerCompose(ctx context.Context) error {
 	args := []string{"compose", "-f", composeFilePaths, "up", "-d", "--build"}
 	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Env = os.Environ()
-	for i, Hostname := range Hostnames {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", i+1, Hostname))
+	for i, cassandraConfig := range CassandraConfigs {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", i+1, cassandraConfig.Hostname))
 	}
 
 	cmd.Stderr = os.Stderr
@@ -231,9 +250,9 @@ func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
 	args := []string{"compose", "-f", composeFilePaths, "up", "-d", "--build"}
 	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Env = os.Environ()
-	for i, Hostname := range Hostnames {
+	for i, cassandraConfig := range CassandraConfigs {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d= -Dcom.sun.management.jmxremote.authenticate=true ", i+1)+
-			fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname)+
+			fmt.Sprintf("-Djava.rmi.server.hostname=%s ", cassandraConfig.Hostname)+
 			"-Dcom.sun.management.jmxremote.ssl=true "+
 			"-Dcom.sun.management.jmxremote.ssl.need.client.auth=true "+
 			"-Dcom.sun.management.jmxremote.registry.ssl=true "+

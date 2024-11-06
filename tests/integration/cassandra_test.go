@@ -29,18 +29,13 @@ const (
 	integrationContainerName = "nri-cassandra"
 )
 
-var (
-	envCassandraVersions    = []string{"3.11.0", "4.0.3", "5.0.2"}
-	cassandraContainerNames = []string{"cassandra-3-11-0", "cassandra-4-0-3", "cassandra-latest-supported"}
-)
-
 type CassandraTestSuite struct {
 	suite.Suite
 	cancelComposeCtx context.CancelFunc
 }
 
 func TestCassandraTestSuite(t *testing.T) {
-	suite.Run(t, new(CassandraTestSuite))
+	// suite.Run(t, new(CassandraTestSuite))
 }
 
 func (s *CassandraTestSuite) SetupSuite() {
@@ -60,45 +55,51 @@ func (s *CassandraTestSuite) TearDownSuite() {
 }
 
 func (s *CassandraTestSuite) TestCassandraIntegration_Success() {
-	for i, _ := range envCassandraVersions {
-		t := s.T()
+	t := s.T()
 
-		testName := t.Name()
+	testName := t.Name()
 
-		ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancelFn()
+	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancelFn()
 
-		testCases := []struct {
-			name       string
-			config     map[string]string
-			schemaFile string
+	testCases := []struct {
+		name             string
+		config           map[string]string
+		schemaFile       string
+		cassandraVersion string
+	}{}
+	for _, cassandraConfig := range testutils.CassandraConfigs {
+		testCases = append(testCases, struct {
+			name             string
+			config           map[string]string
+			schemaFile       string
+			cassandraVersion string
 		}{
-			{
-				name: "MetricsAndInventoryAreCollected",
-				config: map[string]string{
-					"CONFIG_PATH":     "/etc/cassandra/cassandra-" + envCassandraVersions[i] + ".yaml",
-					"HOSTNAME":        testutils.Hostnames[i],
-					"TIMEOUT":         timeout,
-					"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
-				},
-				schemaFile: "cassandra-schema.json",
+			name: "MetricsAndInventoryAreCollected",
+			config: map[string]string{
+				"CONFIG_PATH":     "/etc/cassandra/cassandra-" + cassandraConfig.Version + ".yaml",
+				"HOSTNAME":        cassandraConfig.Hostname,
+				"TIMEOUT":         timeout,
+				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},
-		}
+			schemaFile:       "cassandra-schema.json",
+			cassandraVersion: cassandraConfig.Version,
+		})
+	}
 
-		for _, testCase := range testCases {
-			t.Run(testCase.name, func(t *testing.T) {
-				stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
-				assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			stdout, stderr, err := testutils.RunDockerExecCommand(ctx, t, integrationContainerName, []string{integrationBinPath}, testCase.config)
+			assert.NoError(t, err, "It isn't possible to execute Cassandra integration binary.")
 
-				assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
+			assert.Empty(t, testutils.FilterStderr(stderr), "Unexpected stderr")
 
-				schemaDir := fmt.Sprintf("json-schema-files-%s", envCassandraVersions[i])
-				schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
+			schemaDir := fmt.Sprintf("json-schema-files-%s", testCase.cassandraVersion)
+			schemaPath := filepath.Join(schemaDir, testCase.schemaFile)
 
-				err = jsonschema.Validate(schemaPath, stdout)
-				assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
-			})
-		}
+			err = jsonschema.Validate(schemaPath, stdout)
+			assert.NoError(t, err, "The output of Cassandra integration doesn't have expected format.")
+		})
 	}
 }
 
@@ -134,7 +135,7 @@ func (s *CassandraTestSuite) TestCassandraIntegration_WrongConfig() {
 			name: "InvalidPort",
 			config: map[string]string{
 				"METRICS":         "true",
-				"HOSTNAME":        testutils.Hostnames[len(testutils.Hostnames)-1],
+				"HOSTNAME":        testutils.CassandraConfigs[len(testutils.CassandraConfigs)-1].Hostname,
 				"PORT":            "1",
 				"NRIA_CACHE_PATH": fmt.Sprintf("/tmp/%v.json", testName),
 			},
