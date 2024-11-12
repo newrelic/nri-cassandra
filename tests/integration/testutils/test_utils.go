@@ -41,12 +41,12 @@ var (
 			Hostname:      "cassandra-3-11-0",
 		},
 		{
-			Version:       "4.0.3",
+			Version:       "4.0.3", // Few threadpool metrics are missing when we scrape metrics from cassandra server with no activity this is due to lazy initialization.
 			ContainerName: "cassandra-4-0-3",
 			Hostname:      "cassandra-4-0-3",
 		},
 		{
-			Version:       "5.0.2",
+			Version:       "5.0.2", // Few threadpool metrics are missing when we scrape metrics from cassandra server with no activity this is due to lazy initialization.
 			ContainerName: "cassandra-latest-supported",
 			Hostname:      "cassandra-latest-supported",
 		},
