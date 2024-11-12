@@ -1,14 +1,32 @@
 version: '3.1'
 
 services:
-  cassandra:
-    container_name: cassandra
+  cassandra-3-11-0:
+    container_name: cassandra-3-11-0
     build:
       context: ../../
-      dockerfile: tests/integration/cassandra/Dockerfile
+      dockerfile: tests/integration/cassandra/versions/3.11.0/Dockerfile
     restart: "no"
     environment:
-      - EXTRA_JVM_OPTS
+      - EXTRA_JVM_OPTS_1
+  
+  cassandra-4-0-3:
+    container_name: cassandra-4-0-3
+    build:
+      context: ../../
+      dockerfile: tests/integration/cassandra/versions/4.0.3/Dockerfile
+    restart: "no"
+    environment:
+      - EXTRA_JVM_OPTS_2
+
+  cassandra-latest-supported:
+    container_name: cassandra-latest-supported
+    build:
+      context: ../../
+      dockerfile: tests/integration/cassandra/versions/5.0.2/Dockerfile
+    restart: "no"
+    environment:
+      - EXTRA_JVM_OPTS_3
     ports:
       - "7199:7199"
 
@@ -18,4 +36,6 @@ services:
       context: ../../
       dockerfile: tests/integration/Dockerfile
     volumes:
-      - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml
+      - ./cassandra/versions/3.11.0/cassandra.yaml:/etc/cassandra/cassandra-3.11.0.yaml
+      - ./cassandra/versions/4.0.3/cassandra.yaml:/etc/cassandra/cassandra-4.0.3.yaml
+      - ./cassandra/versions/5.0.2/cassandra.yaml:/etc/cassandra/cassandra-5.0.2.yaml

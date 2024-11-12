@@ -25,8 +25,6 @@ import (
 )
 
 const (
-	// Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
-	Hostname           = "cassandra"
 	JMXUsername        = "cassandra"
 	JMXPassword        = "cassandra"
 	KeystorePassword   = "cassandra"
@@ -34,6 +32,32 @@ const (
 	TruststorePassword = "cassandra"
 	TruststoreFile     = "/certs/cassandra.truststore"
 )
+
+var (
+	CassandraConfigs = []CassandraConfig{
+		{
+			Version:       "3.11.0",
+			ContainerName: "cassandra-3-11-0",
+			Hostname:      "cassandra-3-11-0",
+		},
+		{
+			Version:       "4.0.3", // Few threadpool metrics are missing when we scrape metrics from cassandra server with no activity this is due to lazy initialization.
+			ContainerName: "cassandra-4-0-3",
+			Hostname:      "cassandra-4-0-3",
+		},
+		{
+			Version:       "5.0.2", // Few threadpool metrics are missing when we scrape metrics from cassandra server with no activity this is due to lazy initialization.
+			ContainerName: "cassandra-latest-supported",
+			Hostname:      "cassandra-latest-supported",
+		},
+	}
+)
+
+type CassandraConfig struct {
+	Version       string
+	ContainerName string
+	Hostname      string // Hostname for the Cassandra service. (Will be the cassandra service inside the docker-compose file).
+}
 
 // GetIntegrationTestsPath return the absolute path to this project's integration tests.
 func GetIntegrationTestsPath() (testsPath string) {
@@ -177,9 +201,11 @@ func RunDockerCommandForContainer(t *testing.T, command, containerName string) e
 func isComposeReady(cxt context.Context) bool {
 	for {
 		errIntegration := exec.Command("docker", "exec", "-i", "nri-cassandra", "ls").Run()
-		errCassandra := exec.Command("docker", "exec", "-i", "cassandra", "ls").Run()
+		errCassandraLatestSupport := exec.Command("docker", "exec", "-i", "cassandra-latest-supported", "ls").Run()
+		errCassandra3110 := exec.Command("docker", "exec", "-i", "cassandra-3-11-0", "ls").Run()
+		errCassandra403 := exec.Command("docker", "exec", "-i", "cassandra-4-0-3", "ls").Run()
 
-		if errIntegration == nil && errCassandra == nil {
+		if errIntegration == nil && errCassandraLatestSupport == nil && errCassandra3110 == nil && errCassandra403 == nil {
 			return true
 		}
 
@@ -199,7 +225,10 @@ func ConfigureCassandraDockerCompose(ctx context.Context) error {
 
 	args := []string{"compose", "-f", composeFilePaths, "up", "-d", "--build"}
 	cmd := exec.CommandContext(ctx, "docker", args...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("EXTRA_JVM_OPTS=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", Hostname))
+	cmd.Env = os.Environ()
+	for i, cassandraConfig := range CassandraConfigs {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d=-Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=%s -Dcom.sun.management.jmxremote=true", i+1, cassandraConfig.Hostname))
+	}
 
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
@@ -222,18 +251,19 @@ func ConfigureSSLCassandraDockerCompose(ctx context.Context) error {
 
 	args := []string{"compose", "-f", composeFilePaths, "up", "-d", "--build"}
 	cmd := exec.CommandContext(ctx, "docker", args...)
-	cmd.Env = append(os.Environ(), "EXTRA_JVM_OPTS= -Dcom.sun.management.jmxremote.authenticate=true "+
-		fmt.Sprintf("-Djava.rmi.server.hostname=%s ", Hostname)+
-		"-Dcom.sun.management.jmxremote.ssl=true "+
-		"-Dcom.sun.management.jmxremote.ssl.need.client.auth=true "+
-		"-Dcom.sun.management.jmxremote.registry.ssl=true "+
-		"-Dcom.sun.management.jmxremote=true "+
-		"-Djavax.net.ssl.keyStore=/opt/cassandra/conf/certs/cassandra.keystore  "+
-		fmt.Sprintf("-Djavax.net.ssl.keyStorePassword=%s ", KeystorePassword)+
-		"-Djavax.net.ssl.trustStore=/opt/cassandra/conf/certs/cassandra.truststore "+
-		fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=%s ", TruststorePassword),
-	)
-
+	cmd.Env = os.Environ()
+	for i, cassandraConfig := range CassandraConfigs {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("EXTRA_JVM_OPTS_%d= -Dcom.sun.management.jmxremote.authenticate=true ", i+1)+
+			fmt.Sprintf("-Djava.rmi.server.hostname=%s ", cassandraConfig.Hostname)+
+			"-Dcom.sun.management.jmxremote.ssl=true "+
+			"-Dcom.sun.management.jmxremote.ssl.need.client.auth=true "+
+			"-Dcom.sun.management.jmxremote.registry.ssl=true "+
+			"-Dcom.sun.management.jmxremote=true "+
+			"-Djavax.net.ssl.keyStore=/opt/cassandra/conf/certs/cassandra.keystore  "+
+			fmt.Sprintf("-Djavax.net.ssl.keyStorePassword=%s ", KeystorePassword)+
+			"-Djavax.net.ssl.trustStore=/opt/cassandra/conf/certs/cassandra.truststore "+
+			fmt.Sprintf("-Djavax.net.ssl.trustStorePassword=%s ", TruststorePassword))
+	}
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
