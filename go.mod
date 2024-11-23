@@ -4,7 +4,7 @@ go 1.23.2
 
 require (
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
-	github.com/newrelic/nrjmx/gojmx v0.0.0-20240305121005-9fddfa34e08e
+	github.com/newrelic/nrjmx/gojmx v0.0.0-20241113102802-422c96c53489
 	github.com/stretchr/testify v1.10.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
