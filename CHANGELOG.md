@@ -9,6 +9,11 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+## v2.14.4 - 2025-07-02
+
+### ⛓️ Dependencies
+- Updated golang version to v1.24.4
+
 ## v2.14.3 - 2025-02-05
 
 ### ⛓️ Dependencies
