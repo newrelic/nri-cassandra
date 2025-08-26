@@ -18,5 +18,5 @@ jobs:
       publish_schema: "ohi-jmx"
       publish_schema_fips: "ohi-jmx-fips"
       win_package_type: exe
-      dest_prefix: "fips-test-nri-cassandra-rahul/"
+      dest_prefix: "test-cassandra-fips-prerelease/"
     secrets: inherit
