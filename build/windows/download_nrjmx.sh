@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-# Gets last version of nrjmx MSI installer
+# Downloads nrjmx v2.10.1 MSI installer
 
-echo "Downlading last version of nrjmx MSI installer"
+echo "Downloading nrjmx v2.10.1 MSI installer"
 if [[ -z $NRJMX_URL ]]; then
-    NRJMX_VERSION=$(curl --silent "https://api.github.com/repos/newrelic/nrjmx/releases/latest" | grep '"tag_name":' |  grep -oE '[0-9.?]+')
-    echo "Using latest nrjmx version $NRJMX_VERSION."
+    NRJMX_VERSION="2.10.1"
+    echo "Using nrjmx version $NRJMX_VERSION."
     NRJMX_URL=https://github.com/newrelic/nrjmx/releases/download/v$NRJMX_VERSION/nrjmx-amd64.$NRJMX_VERSION.msi
 fi
 
