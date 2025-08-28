@@ -7,10 +7,10 @@ COPY . .
 RUN make clean compile
 WORKDIR /
 
-# Install latest version of nrjmx
+# Install latest version of nrjmx from staging
 # Package installation requires a version of nri-jmx grater than a value so this is why we test with the latest one.
-RUN curl -fsSL https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/newrelic-infra.gpg && \
-  echo "deb https://download.newrelic.com/infrastructure_agent/linux/apt bookworm main" | tee -a /etc/apt/sources.list.d/newrelic-infra.list && \
+RUN curl -fsSL http://nr-downloads-ohai-staging.s3-website-us-east-1.amazonaws.com/infrastructure_agent/gpg/newrelic-infra.gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/newrelic-infra.gpg && \
+  echo "deb http://nr-downloads-ohai-staging.s3-website-us-east-1.amazonaws.com/infrastructure_agent/linux/apt bookworm main" | tee -a /etc/apt/sources.list.d/newrelic-infra.list && \
   apt-get update && \
   apt-get install nrjmx
 
