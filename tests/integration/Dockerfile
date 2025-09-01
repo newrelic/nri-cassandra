@@ -21,4 +21,5 @@ COPY --from=builder /usr/lib/nrjmx/nrjmx.jar /usr/lib/nrjmx/nrjmx.jar
 
 COPY ./tests/integration/cassandra/certs /certs
 
+
 CMD ["sleep", "1h"]
