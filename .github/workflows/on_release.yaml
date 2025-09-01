@@ -14,4 +14,6 @@ jobs:
       integration: cassandra
       tag: ${{ github.event.release.tag_name }}
       publish_schema: "ohi-jmx"
+      upload_fips_packages: true
+      publish_schema_fips: "ohi-jmx-fips"
     secrets: inherit
