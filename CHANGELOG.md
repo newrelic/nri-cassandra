@@ -9,6 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### enhancement
+- Updated nrjmx-fips patch version to v2.10.2
+
 ## v2.15.0 - 2025-09-03
 
 ### 🚀 Enhancements
