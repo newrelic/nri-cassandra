@@ -9,6 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### security
+- Updated golang version to v1.25.3
+
 ### enhancement
 - Updated nrjmx-fips patch version to v2.10.2
 
