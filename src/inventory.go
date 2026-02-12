@@ -12,7 +12,7 @@ import (
 
 	"github.com/newrelic/infra-integrations-sdk/v3/log"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/newrelic/infra-integrations-sdk/v3/data/inventory"
 )
