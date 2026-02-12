@@ -4,7 +4,7 @@ go 1.25.7
 
 require (
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
-	github.com/newrelic/nrjmx/gojmx v0.0.0-20240305121005-9fddfa34e08e
+	github.com/newrelic/nrjmx/gojmx v0.0.0-20251008190552-2821be002322
 	github.com/stretchr/testify v1.11.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	github.com/apache/thrift v0.18.1 // indirect
+	github.com/apache/thrift v0.21.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
