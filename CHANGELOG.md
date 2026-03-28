@@ -9,6 +9,10 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### security
+- update go to v1.25.8
+- update nrjmx/gojmx to fix transitive CVEs
+
 ## v2.17.1 - 2026-02-05
 
 ### ⛓️ Dependencies
