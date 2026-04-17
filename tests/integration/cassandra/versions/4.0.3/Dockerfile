@@ -1,4 +1,4 @@
-FROM cassandra:4.1.11
+FROM cassandra:5.0.8
 
 ENV JVM_OPTS="-Xmn100m -Xmx384m -Xms128m"
 ENV LOCAL_JMX="no"
