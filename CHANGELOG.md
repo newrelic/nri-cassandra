@@ -9,7 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
-### security
+## v2.19.0 - 2026-04-17
+
+### 🛡️ Security notices
 - upgrade go to v1.25.8
 
 ## v2.18.0 - 2026-03-29
