@@ -6,6 +6,10 @@ on:
       - prereleased
     tags:
       - 'v*'
+
+permissions:
+  contents: read
+
 jobs:
   pre-release:
     uses: newrelic/coreint-automation/.github/workflows/reusable_pre_release.yaml@v3
