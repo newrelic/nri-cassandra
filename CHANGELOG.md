@@ -9,6 +9,12 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### security
+- Updated golang version to v1.26.3
+- Updated github.com/apache/thrift to v0.23.0 (fixes GHSA-wf45-q9ch-q8gh)
+- Updated go.opentelemetry.io/otel to v1.41.0 (fixes GHSA-mh2q-q3fh-2475)
+- Updated github.com/docker/docker to v28.0.0 (fixes GHSA-4vq8-7jfc-9cvp)
+
 ## v2.19.0 - 2026-04-17
 
 ### 🛡️ Security notices
