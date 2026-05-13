@@ -1,6 +1,6 @@
 module github.com/newrelic/nri-cassandra
 
-go 1.25.9
+go 1.25.10
 
 require (
 	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
