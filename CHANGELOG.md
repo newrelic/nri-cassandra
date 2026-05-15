@@ -10,7 +10,7 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 ## Unreleased
 
 ### security
-- update github.com/apache/thrift to v0.23.0
+- update github.com/apache/thrift to v0.23.1-0.20260429145742-d2acd3c49e58
 
 ## v2.19.0 - 2026-04-17
 
