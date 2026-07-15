@@ -9,7 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
-### security
+## v2.21.0 - 2026-07-15
+
+### 🛡️ Security notices
 - Upgraded `golang.org/x/crypto` from v0.45.0 to v0.52.0 to fix [CVE-2026-39827](https://github.com/advisories/GHSA-qpw4-5x99-6vjp) (High severity)
 - Upgraded `go.opentelemetry.io/otel` from v1.40.0 to v1.41.0 to fix [GHSA-mh2q-q3fh-2475](https://github.com/advisories/GHSA-mh2q-q3fh-2475) (High severity)
 - Upgraded `github.com/newrelic/nrjmx/gojmx` to fix [GHSA-x744-4wpc-v9h2](https://github.com/advisories/GHSA-x744-4wpc-v9h2) (High severity) and [GHSA-4vq8-7jfc-9cvp](https://github.com/advisories/GHSA-4vq8-7jfc-9cvp) (Low severity)
