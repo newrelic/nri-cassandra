@@ -9,9 +9,14 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
-### Security
+## v2.22.0 - 2026-07-28
+
+### 🛡️ Security notices
 - Upgraded `golang.org/x/crypto` from v0.52.0 to v0.54.0 to fix [CVE-2026-39829](https://www.cve.org/CVERecord?id=CVE-2026-39829) (RSA/DSA key size DoS), [CVE-2026-39830](https://www.cve.org/CVERecord?id=CVE-2026-39830) (SSH goroutine/resource leak), [CVE-2026-39831](https://www.cve.org/CVERecord?id=CVE-2026-39831) (FIDO/U2F User Presence bypass), [CVE-2026-39834](https://www.cve.org/CVERecord?id=CVE-2026-39834) (SSH integer overflow infinite loop), [CVE-2026-42508](https://www.cve.org/CVERecord?id=CVE-2026-42508) (SSH CA revocation bypass), [CVE-2026-46595](https://www.cve.org/CVERecord?id=CVE-2026-46595) (SSH authorization bypass), [CVE-2026-46598](https://www.cve.org/CVERecord?id=CVE-2026-46598) (ed25519 panic)
 - Upgraded `golang.org/x/sys` from v0.45.0 to v0.47.0
+
+### ⛓️ Dependencies
+- Updated golang patch version to v1.26.5
 
 ## v2.21.0 - 2026-07-15
 
