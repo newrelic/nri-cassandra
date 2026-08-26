@@ -9,10 +9,12 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
-### Security
+## v2.24.0 - 2026-08-26
+
+### 🛡️ Security notices
 - Upgraded `github.com/moby/go-archive` from v0.2.0 to v0.3.0 to fix [GHSA-hfg8-hc9c-6c3h](https://github.com/advisories/GHSA-hfg8-hc9c-6c3h) (High severity - tar extraction path traversal)
 - Upgraded `go.opentelemetry.io/otel` (and `otel/metric`, `otel/trace`) from v1.43.0 to v1.44.0 to fix [GHSA-5wrp-cwcj-q835](https://github.com/advisories/GHSA-5wrp-cwcj-q835) (Medium severity - unbounded baggage header length)
-- Upgraded `github.com/klauspost/compress` from v1.18.5 to v1.18.7 to fix [GHSA-259r-337f-4rfw](https://github.com/advisories/GHSA-259r-337f-4rfw) (OOB read in `s2`)
+- Upgraded `github.com/klauspost/compress` from v1.18.5 to v1.18.7 to fix [GHSA-259r-337f-4rfw](https://github.com/advisories/GHSA-259r-337f-4rfw) (OOB read in `s2`\)
 
 ## v2.23.1 - 2026-08-19
 
