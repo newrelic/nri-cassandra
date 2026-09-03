@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Unreleased section should follow [Release Toolkit](https://github.com/newrelic/release-toolkit#render-markdown-and-update-markdown)
 
 ## Unreleased
+### security 
+- update github.com/apache/thrift to v0.24.0 to address CVE-2026-43871
 
 ## v2.24.0 - 2026-08-26
 
