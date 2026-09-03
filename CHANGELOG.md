@@ -11,6 +11,7 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ### security 
 - update github.com/apache/thrift to v0.24.0 to address CVE-2026-43871
+- update golang.org/x/crypto to v.55.0
 
 ## v2.24.0 - 2026-08-26
 
