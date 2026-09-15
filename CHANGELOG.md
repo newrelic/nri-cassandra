@@ -9,7 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
-### security 
+## v2.25.0 - 2026-09-15
+
+### 🛡️ Security notices
 - update github.com/apache/thrift to v0.24.0 to address CVE-2026-43871
 - update golang.org/x/crypto to v0.56.0 to fix [GO-2026-6355](https://pkg.go.dev/vuln/GO-2026-6355) and [GO-2026-6354](https://pkg.go.dev/vuln/GO-2026-6354) (SSH channel deadlock DoS)
 - Signed the Windows `nri-cassandra.exe` binary during the installer build, not just the `.msi` wrapper, fixing Defender/VirusTotal false-positive detections.
