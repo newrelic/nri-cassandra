@@ -3,7 +3,7 @@ module github.com/newrelic/nri-cassandra
 go 1.26.6
 
 require (
-	github.com/newrelic/infra-integrations-sdk/v3 v3.9.1
+	github.com/newrelic/infra-integrations-sdk/v4 v4.2.1
 	github.com/newrelic/nrjmx/gojmx v0.0.0-20260714104524-a2f2193e84e3
 	github.com/stretchr/testify v1.12.1
 	github.com/xeipuuv/gojsonschema v1.2.0
