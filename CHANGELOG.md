@@ -9,6 +9,10 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### security
+- Bump apache/thrift  to v0.25.0
+- Bump golang.org/x/crypto to v0.57.0
+
 ## v2.25.0 - 2026-09-15
 
 ### 🛡️ Security notices
