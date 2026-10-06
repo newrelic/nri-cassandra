@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	github.com/apache/thrift v0.24.0 // indirect
+	github.com/apache/thrift v0.25.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/moby/go-archive v0.3.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
