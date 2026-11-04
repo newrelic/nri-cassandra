@@ -9,7 +9,9 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
-### security
+## v2.27.0 - 2026-11-04
+
+### 🛡️ Security notices
 - Bump Go to 1.26.9 to fix stdlib vulnerabilities (CVE-2026-78667, CVE-2026-78669, CVE-2026-97031, CVE-2026-56866, CVE-2026-78663, CVE-2026-94439, CVE-2026-94448, CVE-2026-97032, CVE-2026-56857)
 - Bump Go to 1.26.10 to fix stdlib vulnerabilities (CVE-2026-111943, CVE-2026-78660, CVE-2026-94440, CVE-2026-97030)
 
