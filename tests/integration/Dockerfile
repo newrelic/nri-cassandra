@@ -14,7 +14,7 @@ RUN curl -fsSL https://download.newrelic.com/infrastructure_agent/gpg/newrelic-i
   apt-get update && \
   apt-get install nrjmx
 
-FROM maven:3.6-jdk-11
+FROM maven:3.8-jdk-11
 COPY --from=builder /go/src/github.com/newrelic/nri-cassandra/bin /
 COPY --from=builder /usr/bin/nrjmx /usr/bin/nrjmx
 COPY --from=builder /usr/lib/nrjmx/nrjmx.jar /usr/lib/nrjmx/nrjmx.jar
