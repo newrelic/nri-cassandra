@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   pre-release:
-    uses: newrelic/coreint-automation/.github/workflows/reusable_pre_release.yaml@v3
+    uses: newrelic/coreint-automation/.github/workflows/reusable_pre_release_build.yaml@batch-s3-publish-fix
     with:
       tag: ${{ github.event.release.tag_name }}
       integration: "cassandra"
