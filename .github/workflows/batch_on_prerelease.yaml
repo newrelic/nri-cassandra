@@ -1,0 +1,26 @@
+name: Batch prerelease pipeline
+
+on:
+  release:
+    types:
+      - prereleased
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  pre-release:
+    if: ${{ contains(github.event.release.body, 'release-flow=batch') }}
+    uses: newrelic/coreint-automation/.github/workflows/reusable_pre_release_build.yaml@v4
+    with:
+      tag: ${{ github.event.release.tag_name }}
+      integration: "cassandra"
+      windows_goarch_matrix: '["amd64"]' # 386 is not supported in jmx integrations
+      windows_download_nrjmx: true
+      upload_fips_packages: true
+      publish_schema: "ohi-jmx"
+      publish_schema_fips: "ohi-jmx-fips"
+      win_package_type: exe
+    secrets: inherit
