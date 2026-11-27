@@ -9,6 +9,10 @@ Unreleased section should follow [Release Toolkit](https://github.com/newrelic/r
 
 ## Unreleased
 
+### security
+- Updated golang version to v1.27.4
+- Bump github.com/klauspost/compress to v1.20.2, go.opentelemetry.io/otel (and otel/trace, otel/metric) to v1.47.0, and golang.org/x/crypto to v0.59.0 to fix grype findings (GO-2026-6865, GO-2026-6975, GHSA-q7gw-24fr-5p69, GO-2026-5932)
+
 ## v2.27.0 - 2026-11-20
 
 ### 🛡️ Security notices
